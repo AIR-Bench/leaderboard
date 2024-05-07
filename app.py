@@ -1,13 +1,9 @@
-import subprocess
 import gradio as gr
 import pandas as pd
 from apscheduler.schedulers.background import BackgroundScheduler
 from huggingface_hub import snapshot_download
 
 from src.about import (
-    CITATION_BUTTON_LABEL,
-    CITATION_BUTTON_TEXT,
-    EVALUATION_QUEUE_TEXT,
     INTRODUCTION_TEXT,
     LLM_BENCHMARKS_TEXT,
     TITLE,
@@ -17,40 +13,40 @@ from src.display.utils import (
     BENCHMARK_COLS,
     COLS,
     EVAL_COLS,
-    EVAL_TYPES,
     NUMERIC_INTERVALS,
     TYPES,
     AutoEvalColumn,
     ModelType,
     fields,
-    WeightType,
     Precision
 )
 from src.envs import API, EVAL_REQUESTS_PATH, EVAL_RESULTS_PATH, QUEUE_REPO, REPO_ID, RESULTS_REPO, TOKEN
 from src.populate import get_evaluation_queue_df, get_leaderboard_df
-from src.submission.submit import add_new_eval
 
 
 def restart_space():
     API.restart_space(repo_id=REPO_ID)
 
+
 try:
     print(EVAL_REQUESTS_PATH)
     snapshot_download(
-        repo_id=QUEUE_REPO, local_dir=EVAL_REQUESTS_PATH, repo_type="dataset", tqdm_class=None, etag_timeout=30, token=TOKEN
+        repo_id=QUEUE_REPO, local_dir=EVAL_REQUESTS_PATH, repo_type="dataset", tqdm_class=None, etag_timeout=30,
+        token=TOKEN
     )
 except Exception:
     restart_space()
 try:
     print(EVAL_RESULTS_PATH)
     snapshot_download(
-        repo_id=RESULTS_REPO, local_dir=EVAL_RESULTS_PATH, repo_type="dataset", tqdm_class=None, etag_timeout=30, token=TOKEN
+        repo_id=RESULTS_REPO, local_dir=EVAL_RESULTS_PATH, repo_type="dataset", tqdm_class=None, etag_timeout=30,
+        token=TOKEN
     )
 except Exception:
     restart_space()
 
-
-raw_data, original_df = get_leaderboard_df(EVAL_RESULTS_PATH, EVAL_REQUESTS_PATH, COLS, BENCHMARK_COLS)
+raw_data, original_df = get_leaderboard_df(
+    EVAL_RESULTS_PATH, EVAL_REQUESTS_PATH, COLS, BENCHMARK_COLS)
 leaderboard_df = original_df.copy()
 
 (
@@ -62,13 +58,13 @@ leaderboard_df = original_df.copy()
 
 # Searching and filtering
 def update_table(
-    hidden_df: pd.DataFrame,
-    columns: list,
-    type_query: list,
-    precision_query: str,
-    size_query: list,
-    show_deleted: bool,
-    query: str,
+        hidden_df: pd.DataFrame,
+        columns: list,
+        type_query: list,
+        precision_query: str,
+        size_query: list,
+        show_deleted: bool,
+        query: str,
 ):
     filtered_df = filter_models(hidden_df, type_query, size_query, precision_query, show_deleted)
     filtered_df = filter_queries(query, filtered_df)
@@ -87,8 +83,8 @@ def select_columns(df: pd.DataFrame, columns: list) -> pd.DataFrame:
     ]
     # We use COLS to maintain sorting
     filtered_df = df[
-        always_here_cols + [c for c in COLS if c in df.columns and c in columns] 
-    ]
+        always_here_cols + [c for c in COLS if c in df.columns and c in columns]
+        ]
     return filtered_df
 
 
@@ -112,7 +108,7 @@ def filter_queries(query: str, filtered_df: pd.DataFrame) -> pd.DataFrame:
 
 
 def filter_models(
-    df: pd.DataFrame, type_query: list, size_query: list, precision_query: list, show_deleted: bool
+        df: pd.DataFrame, type_query: list, size_query: list, precision_query: list, show_deleted: bool
 ) -> pd.DataFrame:
     # Show all models
     if show_deleted:
@@ -168,7 +164,7 @@ with demo:
                             value=False, label="Show gated/private/deleted models", interactive=True
                         )
                 with gr.Column(min_width=320):
-                    #with gr.Box(elem_id="box-filter"):
+                    # with gr.Box(elem_id="box-filter"):
                     filter_columns_type = gr.CheckboxGroup(
                         label="Model types",
                         choices=[t.to_str() for t in ModelType],
@@ -195,7 +191,7 @@ with demo:
                 value=leaderboard_df[
                     [c.name for c in fields(AutoEvalColumn) if c.never_hidden]
                     + shown_columns.value
-                ],
+                    ],
                 headers=[c.name for c in fields(AutoEvalColumn) if c.never_hidden] + shown_columns.value,
                 datatype=TYPES,
                 elem_id="leaderboard-table",
@@ -223,7 +219,8 @@ with demo:
                 ],
                 leaderboard_table,
             )
-            for selector in [shown_columns, filter_columns_type, filter_columns_precision, filter_columns_size, deleted_models_visibility]:
+            for selector in [shown_columns, filter_columns_type, filter_columns_precision, filter_columns_size,
+                             deleted_models_visibility]:
                 selector.change(
                     update_table,
                     [
@@ -241,103 +238,6 @@ with demo:
 
         with gr.TabItem("📝 About", elem_id="llm-benchmark-tab-table", id=2):
             gr.Markdown(LLM_BENCHMARKS_TEXT, elem_classes="markdown-text")
-
-        with gr.TabItem("🚀 Submit here! ", elem_id="llm-benchmark-tab-table", id=3):
-            with gr.Column():
-                with gr.Row():
-                    gr.Markdown(EVALUATION_QUEUE_TEXT, elem_classes="markdown-text")
-
-                with gr.Column():
-                    with gr.Accordion(
-                        f"✅ Finished Evaluations ({len(finished_eval_queue_df)})",
-                        open=False,
-                    ):
-                        with gr.Row():
-                            finished_eval_table = gr.components.Dataframe(
-                                value=finished_eval_queue_df,
-                                headers=EVAL_COLS,
-                                datatype=EVAL_TYPES,
-                                row_count=5,
-                            )
-                    with gr.Accordion(
-                        f"🔄 Running Evaluation Queue ({len(running_eval_queue_df)})",
-                        open=False,
-                    ):
-                        with gr.Row():
-                            running_eval_table = gr.components.Dataframe(
-                                value=running_eval_queue_df,
-                                headers=EVAL_COLS,
-                                datatype=EVAL_TYPES,
-                                row_count=5,
-                            )
-
-                    with gr.Accordion(
-                        f"⏳ Pending Evaluation Queue ({len(pending_eval_queue_df)})",
-                        open=False,
-                    ):
-                        with gr.Row():
-                            pending_eval_table = gr.components.Dataframe(
-                                value=pending_eval_queue_df,
-                                headers=EVAL_COLS,
-                                datatype=EVAL_TYPES,
-                                row_count=5,
-                            )
-            with gr.Row():
-                gr.Markdown("# ✉️✨ Submit your model here!", elem_classes="markdown-text")
-
-            with gr.Row():
-                with gr.Column():
-                    model_name_textbox = gr.Textbox(label="Model name")
-                    revision_name_textbox = gr.Textbox(label="Revision commit", placeholder="main")
-                    model_type = gr.Dropdown(
-                        choices=[t.to_str(" : ") for t in ModelType if t != ModelType.Unknown],
-                        label="Model type",
-                        multiselect=False,
-                        value=None,
-                        interactive=True,
-                    )
-
-                with gr.Column():
-                    precision = gr.Dropdown(
-                        choices=[i.value.name for i in Precision if i != Precision.Unknown],
-                        label="Precision",
-                        multiselect=False,
-                        value="float16",
-                        interactive=True,
-                    )
-                    weight_type = gr.Dropdown(
-                        choices=[i.value.name for i in WeightType],
-                        label="Weights type",
-                        multiselect=False,
-                        value="Original",
-                        interactive=True,
-                    )
-                    base_model_name_textbox = gr.Textbox(label="Base model (for delta or adapter weights)")
-
-            submit_button = gr.Button("Submit Eval")
-            submission_result = gr.Markdown()
-            submit_button.click(
-                add_new_eval,
-                [
-                    model_name_textbox,
-                    base_model_name_textbox,
-                    revision_name_textbox,
-                    precision,
-                    weight_type,
-                    model_type,
-                ],
-                submission_result,
-            )
-
-    with gr.Row():
-        with gr.Accordion("📙 Citation", open=False):
-            citation_button = gr.Textbox(
-                value=CITATION_BUTTON_TEXT,
-                label=CITATION_BUTTON_LABEL,
-                lines=20,
-                elem_id="citation-button",
-                show_copy_button=True,
-            )
 
 scheduler = BackgroundScheduler()
 scheduler.add_job(restart_space, "interval", seconds=1800)
