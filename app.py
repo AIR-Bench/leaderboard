@@ -18,28 +18,28 @@ from src.display.utils import (
 from src.envs import API, EVAL_REQUESTS_PATH, EVAL_RESULTS_PATH, QUEUE_REPO, REPO_ID, RESULTS_REPO, TOKEN
 from src.populate import get_leaderboard_df
 from utils import update_table
+from src.benchmarks import DOMAIN_COLS_QA, LANG_COLS_QA, metric_list
 
 
 def restart_space():
     API.restart_space(repo_id=REPO_ID)
 
-
-try:
-    print(EVAL_REQUESTS_PATH)
-    snapshot_download(
-        repo_id=QUEUE_REPO, local_dir=EVAL_REQUESTS_PATH, repo_type="dataset", tqdm_class=None, etag_timeout=30,
-        token=TOKEN
-    )
-except Exception:
-    restart_space()
-try:
-    print(EVAL_RESULTS_PATH)
-    snapshot_download(
-        repo_id=RESULTS_REPO, local_dir=EVAL_RESULTS_PATH, repo_type="dataset", tqdm_class=None, etag_timeout=30,
-        token=TOKEN
-    )
-except Exception:
-    restart_space()
+# try:
+#     print(EVAL_REQUESTS_PATH)
+#     snapshot_download(
+#         repo_id=QUEUE_REPO, local_dir=EVAL_REQUESTS_PATH, repo_type="dataset", tqdm_class=None, etag_timeout=30,
+#         token=TOKEN
+#     )
+# except Exception:
+#     restart_space()
+# try:
+#     print(EVAL_RESULTS_PATH)
+#     snapshot_download(
+#         repo_id=RESULTS_REPO, local_dir=EVAL_RESULTS_PATH, repo_type="dataset", tqdm_class=None, etag_timeout=30,
+#         token=TOKEN
+#     )
+# except Exception:
+#     restart_space()
 
 raw_data_qa, original_df_qa = get_leaderboard_df(
     EVAL_RESULTS_PATH, EVAL_REQUESTS_PATH, COLS, QA_BENCHMARK_COLS, task='qa', metric='ndcg_at_1')
@@ -58,7 +58,7 @@ with demo:
     gr.Markdown(INTRODUCTION_TEXT, elem_classes="markdown-text")
 
     with gr.Tabs(elem_classes="tab-buttons") as tabs:
-        with gr.TabItem("🏅 LLM Benchmark", elem_id="llm-benchmark-tab-table", id=0):
+        with gr.TabItem("QA", elem_id="llm-benchmark-tab-table", id=0):
             with gr.Row():
                 with gr.Column():
                     with gr.Row():
@@ -67,56 +67,49 @@ with demo:
                             show_label=False,
                             elem_id="search-bar",
                         )
+                    # select domain
                     with gr.Row():
-                        shown_columns = gr.CheckboxGroup(
-                            choices=[
-                                c.name
-                                for c in fields(AutoEvalColumnQA)
-                                if not c.hidden and not c.never_hidden
-                            ],
-                            value=[
-                                c.name
-                                for c in fields(AutoEvalColumnQA)
-                                if c.displayed_by_default and not c.hidden and not c.never_hidden
-                            ],
-                            label="Select columns to show",
-                            elem_id="column-select",
+                        selected_domains = gr.CheckboxGroup(
+                            choices=DOMAIN_COLS_QA,
+                            value=DOMAIN_COLS_QA,
+                            label="Select the domains",
+                            elem_id="domain-column-select",
                             interactive=True,
                         )
+                    # select language
                     with gr.Row():
-                        deleted_models_visibility = gr.Checkbox(
-                            value=False, label="Show gated/private/deleted models", interactive=True
+                        selected_langs = gr.CheckboxGroup(
+                            choices=LANG_COLS_QA,
+                            value=LANG_COLS_QA,
+                            label="Select the languages",
+                            elem_id="language-column-select",
+                            interactive=True
+                        )
+                    # select reranking models
+                    reranking_models = list(frozenset([eval_result.retrieval_model for eval_result in raw_data_qa]))
+                    with gr.Row():
+                        selected_rerankings = gr.CheckboxGroup(
+                            choices=reranking_models,
+                            value=reranking_models,
+                            label="Select the reranking models",
+                            elem_id="reranking-select",
+                            interactive=True
                         )
                 with gr.Column(min_width=320):
-                    # with gr.Box(elem_id="box-filter"):
-                    filter_columns_type = gr.CheckboxGroup(
-                        label="Model types",
-                        choices=[t.to_str() for t in ModelType],
-                        value=[t.to_str() for t in ModelType],
+                    selected_metric = gr.Dropdown(
+                        choices=metric_list,
+                        value=metric_list,
+                        label="Select the metric",
                         interactive=True,
-                        elem_id="filter-columns-type",
+                        elem_id="metric-select",
                     )
-                    filter_columns_precision = gr.CheckboxGroup(
-                        label="Precision",
-                        choices=[i.value.name for i in Precision],
-                        value=[i.value.name for i in Precision],
-                        interactive=True,
-                        elem_id="filter-columns-precision",
-                    )
-                    filter_columns_size = gr.CheckboxGroup(
-                        label="Model sizes (in billions of parameters)",
-                        choices=list(NUMERIC_INTERVALS.keys()),
-                        value=list(NUMERIC_INTERVALS.keys()),
-                        interactive=True,
-                        elem_id="filter-columns-size",
-                    )
+            # update shown_columns when selected_langs and selected_domains are changed
+            shown_columns = leaderboard_df.columns
 
+            # reload the leaderboard_df and raw_data when selected_metric is changed
             leaderboard_table = gr.components.Dataframe(
-                value=leaderboard_df[
-                    [c.name for c in fields(AutoEvalColumnQA) if c.never_hidden]
-                    + shown_columns.value
-                    ],
-                headers=[c.name for c in fields(AutoEvalColumnQA) if c.never_hidden] + shown_columns.value,
+                value=leaderboard_df,
+                # headers=shown_columns,
                 datatype=TYPES,
                 elem_id="leaderboard-table",
                 interactive=False,
@@ -124,41 +117,34 @@ with demo:
             )
 
             # Dummy leaderboard for handling the case when the user uses backspace key
-            hidden_leaderboard_table_for_search = gr.components.Dataframe(
-                value=original_df_qa[COLS],
-                headers=COLS,
-                datatype=TYPES,
-                visible=False,
-            )
-            search_bar.submit(
-                update_table,
-                [
-                    hidden_leaderboard_table_for_search,
-                    shown_columns,
-                    filter_columns_type,
-                    filter_columns_precision,
-                    filter_columns_size,
-                    deleted_models_visibility,
-                    search_bar,
-                ],
-                leaderboard_table,
-            )
-            for selector in [shown_columns, filter_columns_type, filter_columns_precision, filter_columns_size,
-                             deleted_models_visibility]:
-                selector.change(
-                    update_table,
-                    [
-                        hidden_leaderboard_table_for_search,
-                        shown_columns,
-                        filter_columns_type,
-                        filter_columns_precision,
-                        filter_columns_size,
-                        deleted_models_visibility,
-                        search_bar,
-                    ],
-                    leaderboard_table,
-                    queue=True,
-                )
+            # hidden_leaderboard_table_for_search = gr.components.Dataframe(
+            #     value=original_df_qa[COLS],
+            #     headers=COLS,
+            #     datatype=TYPES,
+            #     visible=False,
+            # )
+            # search_bar.submit(
+            #     update_table,
+            #     [
+            #         hidden_leaderboard_table_for_search,
+            #         shown_columns,
+            #         selected_rerankings,
+            #         search_bar,
+            #     ],
+            #     leaderboard_table,
+            # )
+            # for selector in [shown_columns, selected_rerankings, search_bar]:
+            #     selector.change(
+            #         update_table,
+            #         [
+            #             hidden_leaderboard_table_for_search,
+            #             shown_columns,
+            #             selected_rerankings,
+            #             search_bar,
+            #         ],
+            #         leaderboard_table,
+            #         queue=True,
+            #     )
 
         with gr.TabItem("📝 About", elem_id="llm-benchmark-tab-table", id=2):
             gr.Markdown(LLM_BENCHMARKS_TEXT, elem_classes="markdown-text")

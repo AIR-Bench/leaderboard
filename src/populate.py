@@ -17,13 +17,15 @@ def get_leaderboard_df(results_path: str, requests_path: str, cols: list, benchm
         all_data_json += v.to_dict(task=task, metric=metric)
 
     df = pd.DataFrame.from_records(all_data_json)
-    df[AutoEvalColumnQA.average.name] = df[benchmark_cols].mean(axis=1)
+    _benchmark_cols = frozenset(benchmark_cols).intersection(frozenset(df.columns.to_list()))
+    df[AutoEvalColumnQA.average.name] = df[list(_benchmark_cols)].mean(axis=1)
     df = df.sort_values(by=[AutoEvalColumnQA.average.name], ascending=False)
     df.reset_index(inplace=True)
-    df = df[cols].round(decimals=2)
+    _cols = frozenset(cols).intersection(frozenset(df.columns.to_list()))
+    df = df[_cols].round(decimals=2)
 
     # filter out if any of the benchmarks have not been produced
-    df = df[has_no_nan_values(df, benchmark_cols)]
+    df = df[has_no_nan_values(df, _benchmark_cols)]
     return raw_data, df
 
 

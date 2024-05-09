@@ -136,3 +136,6 @@ BenchmarksQA = Enum('BenchmarksQA', qa_benchmark_dict)
 BenchmarksLongDoc = Enum('BenchmarksLongDoc', long_doc_benchmark_dict)
 
 BENCHMARK_COLS_QA = [c.col_name for c in qa_benchmark_dict.values()]
+
+DOMAIN_COLS_QA = list(frozenset([c.domain for c in qa_benchmark_dict.values()]))
+LANG_COLS_QA = list(frozenset([c.lang for c in qa_benchmark_dict.values()]))
