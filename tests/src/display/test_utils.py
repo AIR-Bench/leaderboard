@@ -2,7 +2,6 @@ import pytest
 from src.display.utils import fields, AutoEvalColumnQA, AutoEvalColumnLongDoc, COLS, COLS_LITE, TYPES, EVAL_COLS, QA_BENCHMARK_COLS, LONG_DOC_BENCHMARK_COLS
 
 
-@pytest.mark.parametrize('auto_eval_column')
 def test_fields():
     for c in fields(AutoEvalColumnQA):
         print(c)

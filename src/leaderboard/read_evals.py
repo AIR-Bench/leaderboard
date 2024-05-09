@@ -1,4 +1,5 @@
 import glob
+from collections import defaultdict
 import json
 import os.path
 from dataclasses import dataclass
@@ -6,7 +7,7 @@ from typing import List
 
 import dateutil.parser._parser
 
-from src.display.utils import AutoEvalColumn
+from src.display.utils import AutoEvalColumnQA
 from src.benchmarks import get_safe_name
 
 
@@ -61,20 +62,19 @@ class FullEvalResult:
             results=result_list
         )
 
-    def to_dict(self, task='qa', metric='ndcg_at_1'):
+    def to_dict(self, task='qa', metric='ndcg_at_1') -> List:
         """Convert FullEvalResult to a list of dict compatible with our dataframe UI
         """
-        results = []
+        results = defaultdict(dict)
         for eval_result in self.results:
             if eval_result.metric != metric:
                 continue
             if eval_result.task != task:
                 continue
-            data_dict = {
-                "eval_name": eval_result.eval_name,
-                AutoEvalColumn.retrieval_model.name: self.retrieval_model,
-                AutoEvalColumn.reranking_model.name: self.reranking_model,
-            }
+            results[eval_result.eval_name]["eval_name"] = eval_result.eval_name
+            results[eval_result.eval_name][AutoEvalColumnQA.retrieval_model.name] = self.retrieval_model
+            results[eval_result.eval_name][AutoEvalColumnQA.reranking_model.name] = self.reranking_model
+
             for result in eval_result.results:
                 # add result for each domain, language, and dataset
                 domain = result["domain"]
@@ -82,12 +82,11 @@ class FullEvalResult:
                 dataset = result["dataset"]
                 value = result["value"]
                 if task == 'qa':
-                    benchmark_name = f"{task}_{domain}_{lang}"
+                    benchmark_name = f"{domain}_{lang}"
                 elif task == 'long_doc':
-                    benchmark_name = f"{task}_{domain}_{lang}_{dataset}_{metric}"
-                data_dict[get_safe_name(benchmark_name)] = value
-            results.append(data_dict)
-        return results
+                    benchmark_name = f"{domain}_{lang}_{dataset}_{metric}"
+                results[eval_result.eval_name][get_safe_name(benchmark_name)] = value
+        return [v for v in results.values()]
 
     def update_with_request_file(self, request_path):
         """
@@ -148,7 +147,6 @@ def get_raw_eval_results(results_path: str, requests_path: str) -> List[FullEval
     eval_results = {}
     for model_result_filepath in model_result_filepaths:
         # create evaluation results
-        # TODO: fix the bug here, the running results should not be loaded
         eval_result = FullEvalResult.init_from_json_file(model_result_filepath)
         # get the latest result that is finished
         eval_result.update_with_request_file(requests_path)

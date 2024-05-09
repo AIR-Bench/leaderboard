@@ -14,8 +14,13 @@ def test_init_from_json_file():
 def test_to_dict():
     json_fp = cur_fp.parents[2] / "toydata" / "test_data.json"
     full_eval_result = FullEvalResult.init_from_json_file(json_fp)
-    result_dict = full_eval_result.to_dict(task='qa', metric='ndcg_at_1')
-    assert len(result_dict) == 2
+    result_list = full_eval_result.to_dict(task='qa', metric='ndcg_at_1')
+    assert len(result_list) == 1
+    result_dict = result_list[0]
+    assert result_dict["Retrieval Model"] == "bge-m3"
+    assert result_dict["Reranking Model"] == "bge-reranker-v2-m3"
+    assert result_dict["qa_wiki_en"] is not None
+    assert result_dict["qa_wiki_zh"] is not None
 
 
 def test_get_request_file_for_model():
