@@ -110,7 +110,8 @@ class Benchmark:
     metric: str  # ndcg_at_1 ,metric_key in the json file
     col_name: str  # [domain]_[language], name to display in the leaderboard
 
-benchmark_dict = {}
+qa_benchmark_dict = {}
+long_doc_benchmark_dict = {}
 for task, domain_dict in dataset_dict.items():
     for domain, lang_dict in domain_dict.items():
         for lang, dataset_list in lang_dict.items():
@@ -119,13 +120,14 @@ for task, domain_dict in dataset_dict.items():
                 benchmark_name = get_safe_name(benchmark_name)
                 col_name = f"{domain}_{lang}"
                 for metric in dataset_list:
-                    benchmark_dict[benchmark_name] = Benchmark(benchmark_name, metric, col_name)
+                    qa_benchmark_dict[benchmark_name] = Benchmark(benchmark_name, metric, col_name)
             elif task == "long_doc":
                 for dataset in dataset_list:
                     col_name = f"{domain}_{lang}_{dataset}"
                     for metric in metric_list:
                         benchmark_name = f"{task}_{domain}_{lang}_{dataset}_{metric}"
                         benchmark_name = get_safe_name(benchmark_name)
-                        benchmark_dict[benchmark_name] = Benchmark(benchmark_name, metric, col_name)
+                        long_doc_benchmark_dict[benchmark_name] = Benchmark(benchmark_name, metric, col_name)
 
-Benchmarks = Enum('Benchmarks', benchmark_dict)
+BenchmarksQA = Enum('BenchmarksQA', qa_benchmark_dict)
+BenchmarksLongDoc = Enum('BenchmarksLongDoc', long_doc_benchmark_dict)

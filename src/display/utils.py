@@ -1,6 +1,6 @@
 from dataclasses import dataclass, make_dataclass
 
-from src.benchmarks import Benchmarks
+from src.benchmarks import BenchmarksQA, BenchmarksLongDoc
 
 
 def fields(raw_class):
@@ -19,25 +19,32 @@ class ColumnContent:
     never_hidden: bool = False
 
 
-## Leaderboard columns
-auto_eval_column_dict = []
-# Init
-auto_eval_column_dict.append(
-    ["retrieval_model", ColumnContent, ColumnContent("Retrieval Model", "markdown", True, never_hidden=True)]
-)
-auto_eval_column_dict.append(
-    ["reranking_model", ColumnContent, ColumnContent("Reranking Model", "markdown", True, never_hidden=True)]
-)
-auto_eval_column_dict.append(
-    ["average", ColumnContent, ColumnContent("Average ⬆️", "number", True)]
-)
-for benchmark in Benchmarks:
+def make_autoevalcolumn(cls_name="BenchmarksQA", benchmarks=BenchmarksQA):
+    ## Leaderboard columns
+    auto_eval_column_dict = []
+    # Init
     auto_eval_column_dict.append(
-        [benchmark.name, ColumnContent, ColumnContent(benchmark.value.col_name, "number", True)]
+        ["retrieval_model", ColumnContent, ColumnContent("Retrieval Model", "markdown", True, never_hidden=True)]
     )
+    auto_eval_column_dict.append(
+        ["reranking_model", ColumnContent, ColumnContent("Reranking Model", "markdown", True, never_hidden=True)]
+    )
+    auto_eval_column_dict.append(
+        ["average", ColumnContent, ColumnContent("Average ⬆️", "number", True)]
+    )
+    for benchmark in benchmarks:
+        auto_eval_column_dict.append(
+            [benchmark.name, ColumnContent, ColumnContent(benchmark.value.col_name, "number", True)]
+        )
 
-# We use make dataclass to dynamically fill the scores from Tasks
-AutoEvalColumn = make_dataclass("AutoEvalColumn", auto_eval_column_dict, frozen=True)
+    # We use make dataclass to dynamically fill the scores from Tasks
+    return make_dataclass(cls_name, auto_eval_column_dict, frozen=True)
+
+
+AutoEvalColumnQA = make_autoevalcolumn(
+    "AutoEvalColumnQA", BenchmarksQA)
+AutoEvalColumnLongDoc = make_autoevalcolumn(
+    "AutoEvalColumnLongDoc", BenchmarksLongDoc)
 
 
 ## For the queue columns in the submission tab
@@ -48,10 +55,12 @@ class EvalQueueColumn:  # Queue column
 
 
 # Column selection
-COLS = [c.name for c in fields(AutoEvalColumn) if not c.hidden]
-TYPES = [c.type for c in fields(AutoEvalColumn) if not c.hidden]
-COLS_LITE = [c.name for c in fields(AutoEvalColumn) if c.displayed_by_default and not c.hidden]
+COLS = [c.name for c in fields(AutoEvalColumnQA) if not c.hidden]
+TYPES = [c.type for c in fields(AutoEvalColumnQA) if not c.hidden]
+COLS_LITE = [c.name for c in fields(AutoEvalColumnQA) if c.displayed_by_default and not c.hidden]
 
 EVAL_COLS = [c.name for c in fields(EvalQueueColumn)]
 
-BENCHMARK_COLS = [t.value.col_name for t in Benchmarks]
+QA_BENCHMARK_COLS = [t.value.col_name for t in BenchmarksQA]
+
+LONG_DOC_BENCHMARK_COLS = [t.value.col_name for t in BenchmarksLongDoc]

@@ -1,10 +1,11 @@
 import pytest
-from src.display.utils import fields, AutoEvalColumn, COLS, COLS_LITE, TYPES, EVAL_COLS, BENCHMARK_COLS
+from src.display.utils import fields, AutoEvalColumnQA, AutoEvalColumnLongDoc, COLS, COLS_LITE, TYPES, EVAL_COLS, QA_BENCHMARK_COLS, LONG_DOC_BENCHMARK_COLS
 
 
+@pytest.mark.parametrize('auto_eval_column')
 def test_fields():
-    for c in fields(AutoEvalColumn):
-        print(c.name)
+    for c in fields(AutoEvalColumnQA):
+        print(c)
 
 
 def test_macro_variables():
@@ -12,4 +13,4 @@ def test_macro_variables():
     print(f'COLS_LITE: {COLS_LITE}')
     print(f'TYPES: {TYPES}')
     print(f'EVAL_COLS: {EVAL_COLS}')
-    print(f'BENCHMARK_COLS: {BENCHMARK_COLS}')
+    print(f'BENCHMARK_COLS: {QA_BENCHMARK_COLS}')
