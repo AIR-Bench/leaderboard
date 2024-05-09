@@ -60,11 +60,12 @@ def select_columns(df: pd.DataFrame, domain_query: list, language_query: list) -
 
 def update_table(
         hidden_df: pd.DataFrame,
-        columns: list,
+        domains: list,
+        langs: list,
         reranking_query: list,
         query: str,
 ):
     filtered_df = filter_models(hidden_df, reranking_query)
     filtered_df = filter_queries(query, filtered_df)
-    df = select_columns(filtered_df, columns)
+    df = select_columns(filtered_df, domains, langs)
     return df

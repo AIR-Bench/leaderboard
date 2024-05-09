@@ -87,7 +87,7 @@ with demo:
                             interactive=True
                         )
                     # select reranking models
-                    reranking_models = list(frozenset([eval_result.retrieval_model for eval_result in raw_data_qa]))
+                    reranking_models = list(frozenset([eval_result.reranking_model for eval_result in raw_data_qa]))
                     with gr.Row():
                         selected_rerankings = gr.CheckboxGroup(
                             choices=reranking_models,
@@ -104,26 +104,24 @@ with demo:
                         interactive=True,
                         elem_id="metric-select",
                     )
-            # update shown_columns when selected_langs and selected_domains are changed
-            shown_columns = leaderboard_df.columns
 
             # reload the leaderboard_df and raw_data when selected_metric is changed
             leaderboard_table = gr.components.Dataframe(
                 value=leaderboard_df,
                 # headers=shown_columns,
-                datatype=TYPES,
+                # datatype=TYPES,
                 elem_id="leaderboard-table",
                 interactive=False,
                 visible=True,
             )
 
             # Dummy leaderboard for handling the case when the user uses backspace key
-            # hidden_leaderboard_table_for_search = gr.components.Dataframe(
-            #     value=original_df_qa[COLS],
-            #     headers=COLS,
-            #     datatype=TYPES,
-            #     visible=False,
-            # )
+            hidden_leaderboard_table_for_search = gr.components.Dataframe(
+                value=original_df_qa,
+                # headers=COLS,
+                # datatype=TYPES,
+                visible=False,
+            )
             # search_bar.submit(
             #     update_table,
             #     [
@@ -134,18 +132,19 @@ with demo:
             #     ],
             #     leaderboard_table,
             # )
-            # for selector in [shown_columns, selected_rerankings, search_bar]:
-            #     selector.change(
-            #         update_table,
-            #         [
-            #             hidden_leaderboard_table_for_search,
-            #             shown_columns,
-            #             selected_rerankings,
-            #             search_bar,
-            #         ],
-            #         leaderboard_table,
-            #         queue=True,
-            #     )
+            for selector in [selected_domains, selected_langs]:
+                selector.change(
+                    update_table,
+                    [
+                        hidden_leaderboard_table_for_search,
+                        selected_domains,
+                        selected_langs,
+                        selected_rerankings,
+                        search_bar,
+                    ],
+                    leaderboard_table,
+                    queue=True,
+                )
 
         with gr.TabItem("📝 About", elem_id="llm-benchmark-tab-table", id=2):
             gr.Markdown(LLM_BENCHMARKS_TEXT, elem_classes="markdown-text")
