@@ -49,11 +49,11 @@ raw_data, original_df = get_leaderboard_df(
     EVAL_RESULTS_PATH, EVAL_REQUESTS_PATH, COLS, BENCHMARK_COLS)
 leaderboard_df = original_df.copy()
 
-(
-    finished_eval_queue_df,
-    running_eval_queue_df,
-    pending_eval_queue_df,
-) = get_evaluation_queue_df(EVAL_REQUESTS_PATH, EVAL_COLS)
+# (
+#     finished_eval_queue_df,
+#     running_eval_queue_df,
+#     pending_eval_queue_df,
+# ) = get_evaluation_queue_df(EVAL_REQUESTS_PATH, EVAL_COLS)
 
 
 # Searching and filtering

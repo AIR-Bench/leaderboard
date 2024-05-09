@@ -1,0 +1,50 @@
+[
+  {
+    "config": {
+      "retrieval_model": "bge-m3",
+      "reranking_model": "NoReranker",
+      "task": "long_doc",
+      "metric": "ndcg_at_1"
+    },
+    "results": [
+      {
+        "domain": "law",
+        "lang": "en",
+        "dataset": "lex_files_500K-600K",
+        "value": 0.75723
+      }
+    ]
+  },
+  {
+    "config": {
+      "retrieval_model": "bge-m3",
+      "reranking_model": "NoReranker",
+      "task": "qa",
+      "metric": "ndcg_at_1"
+    },
+    "results": [
+      {
+        "domain": "wiki",
+        "lang": "en",
+        "dataset": "unknown",
+        "value": 0.69083
+      }
+    ]
+  },
+  {
+    "config": {
+      "retrieval_model": "bge-m3",
+      "reranking_model": "NoReranker",
+      "task": "qa",
+      "metric": "ndcg_at_1"
+    },
+    "results": [
+      {
+        "domain": "wiki",
+        "lang": "zh",
+        "dataset": "unknown",
+        "value": 0.78358
+      }
+    ]
+  }
+]

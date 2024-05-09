@@ -24,7 +24,7 @@ def get_leaderboard_df(results_path: str, requests_path: str, cols: list, benchm
 
 
 def get_evaluation_queue_df(save_path: str, cols: list) -> list[pd.DataFrame]:
-    """Creates the different dataframes for the evaluation queues requestes"""
+    """Creates the different dataframes for the evaluation queues requests"""
     entries = [entry for entry in os.listdir(save_path) if not entry.startswith(".")]
     all_evals = []
 

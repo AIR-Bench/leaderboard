@@ -1,19 +1,36 @@
 from dataclasses import dataclass
 from enum import Enum
 
+
 @dataclass
 class Task:
-    benchmark: str
-    metric: str
-    col_name: str
+    name: str  # qa, long_doc
+
+@dataclass
+class Metric:
+    name: str  # ndcg_at_1
+
+@dataclass
+class Language:
+    name: str  # en, zh
 
 
-# Select your tasks here
-# ---------------------------------------------------
-class Tasks(Enum):
-    # task_key in the json file, metric_key in the json file, name to display in the leaderboard 
-    task0 = Task("anli_r1", "acc", "ANLI")
-    task1 = Task("logiqa", "acc_norm", "LogiQA")
+@dataclass
+class Domain:
+    name: str  # law, wiki
+
+
+@dataclass
+class EmbeddingModel:
+    full_name: str  # jinaai/jina-embeddings-v2-en-base
+    org: str  # jinaai
+    model: str  # jina-embeddings-v2-en-base
+    size: int  # size (millions of parameters)
+    dim: int  # output dimensions
+    max_tokens: int  # max tokens
+    model_type: str  # open, proprietary, sentence transformers
+
+
 
 NUM_FEWSHOT = 0 # Change with your few shot
 # ---------------------------------------------------
