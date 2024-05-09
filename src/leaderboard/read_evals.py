@@ -62,19 +62,22 @@ class FullEvalResult:
             results=result_list
         )
 
-    def to_dict(self, task='qa', metric='ndcg_at_1') -> List:
+    def to_dict(self, task='qa', metric='ndcg_at_3') -> List:
         """Convert FullEvalResult to a list of dict compatible with our dataframe UI
         """
         results = defaultdict(dict)
         for eval_result in self.results:
             if eval_result.metric != metric:
+                # print(f'result skipped: {metric} != {eval_result.metric}')
                 continue
             if eval_result.task != task:
+                # print(f'result skipped: {task} != {eval_result.task}')
                 continue
             results[eval_result.eval_name]["eval_name"] = eval_result.eval_name
             results[eval_result.eval_name][AutoEvalColumnQA.retrieval_model.name] = self.retrieval_model
             results[eval_result.eval_name][AutoEvalColumnQA.reranking_model.name] = self.reranking_model
 
+            print(f'result loaded: {eval_result.eval_name}')
             for result in eval_result.results:
                 # add result for each domain, language, and dataset
                 domain = result["domain"]
@@ -136,7 +139,7 @@ def get_raw_eval_results(results_path: str, requests_path: str) -> List[FullEval
         if len(files) == 0 or any([not f.endswith(".json") for f in files]):
             continue
         try:
-            files.sort(key=lambda x: x.removesuffix(".json").removeprefix("results_demo_")[:-7], reverse=True)
+            files.sort(key=lambda x: x.removesuffix(".json").removeprefix("results_")[:-7], reverse=True)
         except dateutil.parser._parser.ParserError:
             files = [files[-1]]
 
@@ -152,9 +155,11 @@ def get_raw_eval_results(results_path: str, requests_path: str) -> List[FullEval
         eval_result.update_with_request_file(requests_path)
         latest_date_str = eval_result.date.replace(":", "-")
         model_result_date_str = model_result_filepath.split('/')[-1
-        ].removeprefix("results_demo_").removesuffix(".json")
+        ].removeprefix("results_").removesuffix(".json")
         if latest_date_str != model_result_date_str:
+            print(f'file skipped: {model_result_filepath}')
             continue
+        print(f'file loaded: {model_result_filepath}')
         eval_name = eval_result.eval_name
         eval_results[eval_name] = eval_result
 

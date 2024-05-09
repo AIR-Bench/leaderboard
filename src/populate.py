@@ -12,11 +12,14 @@ from typing import Tuple
 def get_leaderboard_df(results_path: str, requests_path: str, cols: list, benchmark_cols: list, task: str, metric: str) -> Tuple[list[EvalResult], pd.DataFrame]:
     """Creates a dataframe from all the individual experiment results"""
     raw_data = get_raw_eval_results(results_path, requests_path)
+    print(f"raw_data loaded: {len(raw_data)}")
     all_data_json = []
     for v in raw_data:
         all_data_json += v.to_dict(task=task, metric=metric)
 
+    print(f'records loaded: {len(all_data_json)}')
     df = pd.DataFrame.from_records(all_data_json)
+    print(f'dataframe created: {df.shape}')
     _benchmark_cols = frozenset(benchmark_cols).intersection(frozenset(df.columns.to_list()))
     df[AutoEvalColumnQA.average.name] = df[list(_benchmark_cols)].mean(axis=1)
     df = df.sort_values(by=[AutoEvalColumnQA.average.name], ascending=False)

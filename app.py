@@ -42,7 +42,8 @@ def restart_space():
 #     restart_space()
 
 raw_data_qa, original_df_qa = get_leaderboard_df(
-    EVAL_RESULTS_PATH, EVAL_REQUESTS_PATH, COLS, QA_BENCHMARK_COLS, task='qa', metric='ndcg_at_1')
+    EVAL_RESULTS_PATH, EVAL_REQUESTS_PATH, COLS, QA_BENCHMARK_COLS, task='qa', metric='ndcg_at_3')
+print(f'data loaded: {len(raw_data_qa)}, {original_df_qa.shape}')
 leaderboard_df = original_df_qa.copy()
 
 # (
