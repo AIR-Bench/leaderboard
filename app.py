@@ -98,7 +98,7 @@ with demo:
                 with gr.Column(min_width=320):
                     selected_metric = gr.Dropdown(
                         choices=metric_list,
-                        value=metric_list,
+                        value=metric_list[0],
                         label="Select the metric",
                         interactive=True,
                         elem_id="metric-select",
