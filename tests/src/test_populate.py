@@ -11,10 +11,13 @@ def test_get_leaderboard_df():
     benchmark_cols = ['wiki_en', 'wiki_zh',]
     raw_data, df = get_leaderboard_df(results_path, requests_path, cols, benchmark_cols)
     assert df.shape[0] == 2
-    assert df["Retrieval Model"][0] == "bge-m3"
-    assert df["Retrieval Model"][1] == "bge-m3"
-    assert df["Reranking Model"][0] == "NoReranker"
-    assert df["Reranking Model"][1] == "bge-reranker-v2-m3"
+    # the results contains only one embedding model
+    for i in range(2):
+        assert df["Retrieval Model"][i] == "bge-m3"
+    # the results contains only two reranking model
+    assert df["Reranking Model"][0] == "bge-reranker-v2-m3"
+    assert df["Reranking Model"][1] == "NoReranker"
+    assert df["Average ⬆️"][0] > df["Average ⬆️"][1]
     assert not df[['Average ⬆️', 'wiki_en', 'wiki_zh',]].isnull().values.any()
 
 

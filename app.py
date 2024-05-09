@@ -1,5 +1,4 @@
 import gradio as gr
-import pandas as pd
 from apscheduler.schedulers.background import BackgroundScheduler
 from huggingface_hub import snapshot_download
 
@@ -10,18 +9,15 @@ from src.about import (
 )
 from src.display.css_html_js import custom_css
 from src.display.utils import (
-    BENCHMARK_COLS,
+    QA_BENCHMARK_COLS,
     COLS,
-    EVAL_COLS,
-    NUMERIC_INTERVALS,
     TYPES,
-    AutoEvalColumn,
-    ModelType,
-    fields,
-    Precision
+    AutoEvalColumnQA,
+    fields
 )
 from src.envs import API, EVAL_REQUESTS_PATH, EVAL_RESULTS_PATH, QUEUE_REPO, REPO_ID, RESULTS_REPO, TOKEN
-from src.populate import get_evaluation_queue_df, get_leaderboard_df
+from src.populate import get_leaderboard_df
+from utils import update_table
 
 
 def restart_space():
@@ -45,87 +41,15 @@ try:
 except Exception:
     restart_space()
 
-raw_data, original_df = get_leaderboard_df(
-    EVAL_RESULTS_PATH, EVAL_REQUESTS_PATH, COLS, BENCHMARK_COLS)
-leaderboard_df = original_df.copy()
+raw_data_qa, original_df_qa = get_leaderboard_df(
+    EVAL_RESULTS_PATH, EVAL_REQUESTS_PATH, COLS, QA_BENCHMARK_COLS, task='qa', metric='ndcg_at_1')
+leaderboard_df = original_df_qa.copy()
 
 # (
 #     finished_eval_queue_df,
 #     running_eval_queue_df,
 #     pending_eval_queue_df,
 # ) = get_evaluation_queue_df(EVAL_REQUESTS_PATH, EVAL_COLS)
-
-
-# Searching and filtering
-def update_table(
-        hidden_df: pd.DataFrame,
-        columns: list,
-        type_query: list,
-        precision_query: str,
-        size_query: list,
-        show_deleted: bool,
-        query: str,
-):
-    filtered_df = filter_models(hidden_df, type_query, size_query, precision_query, show_deleted)
-    filtered_df = filter_queries(query, filtered_df)
-    df = select_columns(filtered_df, columns)
-    return df
-
-
-def search_table(df: pd.DataFrame, query: str) -> pd.DataFrame:
-    return df[(df[AutoEvalColumn.model.name].str.contains(query, case=False))]
-
-
-def select_columns(df: pd.DataFrame, columns: list) -> pd.DataFrame:
-    always_here_cols = [
-        AutoEvalColumn.model_type_symbol.name,
-        AutoEvalColumn.model.name,
-    ]
-    # We use COLS to maintain sorting
-    filtered_df = df[
-        always_here_cols + [c for c in COLS if c in df.columns and c in columns]
-        ]
-    return filtered_df
-
-
-def filter_queries(query: str, filtered_df: pd.DataFrame) -> pd.DataFrame:
-    final_df = []
-    if query != "":
-        queries = [q.strip() for q in query.split(";")]
-        for _q in queries:
-            _q = _q.strip()
-            if _q != "":
-                temp_filtered_df = search_table(filtered_df, _q)
-                if len(temp_filtered_df) > 0:
-                    final_df.append(temp_filtered_df)
-        if len(final_df) > 0:
-            filtered_df = pd.concat(final_df)
-            filtered_df = filtered_df.drop_duplicates(
-                subset=[AutoEvalColumn.model.name, AutoEvalColumn.precision.name, AutoEvalColumn.revision.name]
-            )
-
-    return filtered_df
-
-
-def filter_models(
-        df: pd.DataFrame, type_query: list, size_query: list, precision_query: list, show_deleted: bool
-) -> pd.DataFrame:
-    # Show all models
-    if show_deleted:
-        filtered_df = df
-    else:  # Show only still on the hub models
-        filtered_df = df[df[AutoEvalColumn.still_on_hub.name] == True]
-
-    type_emoji = [t[0] for t in type_query]
-    filtered_df = filtered_df.loc[df[AutoEvalColumn.model_type_symbol.name].isin(type_emoji)]
-    filtered_df = filtered_df.loc[df[AutoEvalColumn.precision.name].isin(precision_query + ["None"])]
-
-    numeric_interval = pd.IntervalIndex(sorted([NUMERIC_INTERVALS[s] for s in size_query]))
-    params_column = pd.to_numeric(df[AutoEvalColumn.params.name], errors="coerce")
-    mask = params_column.apply(lambda x: any(numeric_interval.contains(x)))
-    filtered_df = filtered_df.loc[mask]
-
-    return filtered_df
 
 
 demo = gr.Blocks(css=custom_css)
@@ -147,12 +71,12 @@ with demo:
                         shown_columns = gr.CheckboxGroup(
                             choices=[
                                 c.name
-                                for c in fields(AutoEvalColumn)
+                                for c in fields(AutoEvalColumnQA)
                                 if not c.hidden and not c.never_hidden
                             ],
                             value=[
                                 c.name
-                                for c in fields(AutoEvalColumn)
+                                for c in fields(AutoEvalColumnQA)
                                 if c.displayed_by_default and not c.hidden and not c.never_hidden
                             ],
                             label="Select columns to show",
@@ -189,10 +113,10 @@ with demo:
 
             leaderboard_table = gr.components.Dataframe(
                 value=leaderboard_df[
-                    [c.name for c in fields(AutoEvalColumn) if c.never_hidden]
+                    [c.name for c in fields(AutoEvalColumnQA) if c.never_hidden]
                     + shown_columns.value
                     ],
-                headers=[c.name for c in fields(AutoEvalColumn) if c.never_hidden] + shown_columns.value,
+                headers=[c.name for c in fields(AutoEvalColumnQA) if c.never_hidden] + shown_columns.value,
                 datatype=TYPES,
                 elem_id="leaderboard-table",
                 interactive=False,
@@ -201,7 +125,7 @@ with demo:
 
             # Dummy leaderboard for handling the case when the user uses backspace key
             hidden_leaderboard_table_for_search = gr.components.Dataframe(
-                value=original_df[COLS],
+                value=original_df_qa[COLS],
                 headers=COLS,
                 datatype=TYPES,
                 visible=False,

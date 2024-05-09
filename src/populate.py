@@ -9,16 +9,17 @@ from src.leaderboard.read_evals import get_raw_eval_results, EvalResult
 from typing import Tuple
 
 
-def get_leaderboard_df(results_path: str, requests_path: str, cols: list, benchmark_cols: list) -> Tuple[list[EvalResult], pd.DataFrame]:
+def get_leaderboard_df(results_path: str, requests_path: str, cols: list, benchmark_cols: list, task: str, metric: str) -> Tuple[list[EvalResult], pd.DataFrame]:
     """Creates a dataframe from all the individual experiment results"""
     raw_data = get_raw_eval_results(results_path, requests_path)
     all_data_json = []
     for v in raw_data:
-        all_data_json += v.to_dict()
+        all_data_json += v.to_dict(task=task, metric=metric)
 
     df = pd.DataFrame.from_records(all_data_json)
-    df["Average ⬆️"] = df[benchmark_cols].mean(axis=1)
-    # df = df.sort_values(by=[AutoEvalColumnQA.average.name], ascending=False)
+    df[AutoEvalColumnQA.average.name] = df[benchmark_cols].mean(axis=1)
+    df = df.sort_values(by=[AutoEvalColumnQA.average.name], ascending=False)
+    df.reset_index(inplace=True)
     df = df[cols].round(decimals=2)
 
     # filter out if any of the benchmarks have not been produced
