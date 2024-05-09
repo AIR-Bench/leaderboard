@@ -54,7 +54,7 @@ def select_columns(df: pd.DataFrame, domain_query: list, language_query: list) -
         selected_cols.append(c)
     # We use COLS to maintain sorting
     filtered_df = df[always_here_cols + selected_cols]
-    filtered_df[AutoEvalColumnQA.average.name] = filtered_df[selected_cols].mean(axis=1)
+    filtered_df[AutoEvalColumnQA.average.name] = filtered_df[selected_cols].mean(axis=1).round(decimals=2)
     return filtered_df
 
 

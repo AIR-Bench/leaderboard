@@ -122,17 +122,20 @@ with demo:
                 # datatype=TYPES,
                 visible=False,
             )
-            # search_bar.submit(
-            #     update_table,
-            #     [
-            #         hidden_leaderboard_table_for_search,
-            #         shown_columns,
-            #         selected_rerankings,
-            #         search_bar,
-            #     ],
-            #     leaderboard_table,
-            # )
-            for selector in [selected_domains, selected_langs]:
+            search_bar.submit(
+                update_table,
+                [
+                    hidden_leaderboard_table_for_search,
+                    selected_domains,
+                    selected_langs,
+                    selected_rerankings,
+                    search_bar,
+                ],
+                leaderboard_table,
+            )
+            for selector in [
+                selected_domains, selected_langs, selected_rerankings
+            ]:
                 selector.change(
                     update_table,
                     [
