@@ -1,24 +1,28 @@
-import glob
-from collections import defaultdict
 import json
 import os.path
+from collections import defaultdict
 from dataclasses import dataclass
 from typing import List
 
 import dateutil.parser._parser
+import pandas as pd
 
-from src.display.utils import AutoEvalColumnQA
 from src.benchmarks import get_safe_name
+from src.display.formatting import has_no_nan_values
+from src.display.utils import COL_NAME_RERANKING_MODEL, COL_NAME_RETRIEVAL_MODEL, COLS_QA, QA_BENCHMARK_COLS, \
+    COLS_LONG_DOC, LONG_DOC_BENCHMARK_COLS, COL_NAME_AVG
 
 
 @dataclass
 class EvalResult:
-    """Full evaluation result of a single embedding model
+    """
+    Evaluation result of a single embedding model with a specific reranking model on benchmarks over different
+    domains, languages, and datasets
     """
     eval_name: str  # name of the evaluation, [retrieval_model]_[reranking_model]_[metric]
     retrieval_model: str
     reranking_model: str
-    results: list  # results on all the benchmarks over different domains, languages, and datasets. Use benchmark.name as the key
+    results: list  # results on all the benchmarks stored as dict
     task: str
     metric: str
     timestamp: str = ""  # submission timestamp
@@ -26,6 +30,9 @@ class EvalResult:
 
 @dataclass
 class FullEvalResult:
+    """
+    Evaluation result of a single embedding model with a specific reranking model on benchmarks over different tasks
+    """
     eval_name: str  # name of the evaluation, [retrieval_model]_[reranking_model]
     retrieval_model: str
     reranking_model: str
@@ -34,7 +41,8 @@ class FullEvalResult:
 
     @classmethod
     def init_from_json_file(cls, json_filepath):
-        """Initiate from the result json file for a single model.
+        """
+        Initiate from the result json file for a single model.
         The json file will be written only when the status is FINISHED.
         """
         with open(json_filepath) as fp:
@@ -63,19 +71,18 @@ class FullEvalResult:
         )
 
     def to_dict(self, task='qa', metric='ndcg_at_3') -> List:
-        """Convert FullEvalResult to a list of dict compatible with our dataframe UI
+        """
+        Convert the results in all the EvalResults over different tasks and metrics. The output is a list of dict compatible with the dataframe UI
         """
         results = defaultdict(dict)
         for eval_result in self.results:
             if eval_result.metric != metric:
-                # print(f'result skipped: {metric} != {eval_result.metric}')
                 continue
             if eval_result.task != task:
-                # print(f'result skipped: {task} != {eval_result.task}')
                 continue
             results[eval_result.eval_name]["eval_name"] = eval_result.eval_name
-            results[eval_result.eval_name][AutoEvalColumnQA.retrieval_model.name] = self.retrieval_model
-            results[eval_result.eval_name][AutoEvalColumnQA.reranking_model.name] = self.reranking_model
+            results[eval_result.eval_name][COL_NAME_RETRIEVAL_MODEL] = self.retrieval_model
+            results[eval_result.eval_name][COL_NAME_RERANKING_MODEL] = self.reranking_model
 
             print(f'result loaded: {eval_result.eval_name}')
             for result in eval_result.results:
@@ -92,43 +99,20 @@ class FullEvalResult:
         return [v for v in results.values()]
 
 
-def get_request_file_for_model(requests_path, retrieval_model_name, reranking_model_name):
-    """
-    Load the request status from a json file
-    """
-    request_files = os.path.join(
-        requests_path,
-        f"{retrieval_model_name}",
-        f"{reranking_model_name}",
-        "eval_request_*.json",
-    )
-    request_files = glob.glob(request_files)
-
-    request_file = ""
-    request_files = sorted(request_files, reverse=True)
-    for tmp_request_file in request_files:
-        with open(tmp_request_file, "r") as f:
-            req_content = json.load(f)
-            if req_content["status"] in ["FINISHED"]:
-                request_file = tmp_request_file
-                break
-    return request_file
-
-
 def get_raw_eval_results(results_path: str) -> List[FullEvalResult]:
     """
     Load the evaluation results from a json file
     """
     model_result_filepaths = []
     for root, dirs, files in os.walk(results_path):
-        if len(files) == 0 or any([not f.endswith(".json") for f in files]):
+        if len(files) == 0:
             continue
         try:
             files.sort(key=lambda x: x.removesuffix(".json").removeprefix("results_")[:-7], reverse=True)
         except dateutil.parser._parser.ParserError:
             files = [files[-1]]
 
-        # select the latest and finished results
+        # select the latest results
         for file in files:
             model_result_filepaths.append(os.path.join(root, file))
 
@@ -136,7 +120,6 @@ def get_raw_eval_results(results_path: str) -> List[FullEvalResult]:
     for model_result_filepath in model_result_filepaths:
         # create evaluation results
         eval_result = FullEvalResult.init_from_json_file(model_result_filepath)
-        model_result_date_str = model_result_filepath.split('/')[-1].removeprefix("results_").removesuffix(".json")
         print(f'file loaded: {model_result_filepath}')
         eval_name = eval_result.eval_name
         eval_results[eval_name] = eval_result
@@ -150,3 +133,35 @@ def get_raw_eval_results(results_path: str) -> List[FullEvalResult]:
             print(f"loading failed: {k}")
             continue
     return results
+
+
+def get_leaderboard_df(raw_data: List[FullEvalResult], task: str, metric: str) -> pd.DataFrame:
+    """
+    Creates a dataframe from all the individual experiment results
+    """
+    if task == "qa":
+        cols = COLS_QA
+        benchmark_cols = QA_BENCHMARK_COLS
+    elif task == "long_doc":
+        cols = COLS_LONG_DOC
+        benchmark_cols = LONG_DOC_BENCHMARK_COLS
+    else:
+        raise NotImplemented
+    all_data_json = []
+    for v in raw_data:
+        all_data_json += v.to_dict(task=task, metric=metric)
+    df = pd.DataFrame.from_records(all_data_json)
+    print(f'dataframe created: {df.shape}')
+
+    # calculate the average score for selected benchmarks
+    _benchmark_cols = frozenset(benchmark_cols).intersection(frozenset(df.columns.to_list()))
+    df[COL_NAME_AVG] = df[list(_benchmark_cols)].mean(axis=1).round(decimals=2)
+    df = df.sort_values(by=[COL_NAME_AVG], ascending=False)
+    df.reset_index(inplace=True)
+
+    _cols = frozenset(cols).intersection(frozenset(df.columns.to_list()))
+    df = df[_cols].round(decimals=2)
+
+    # filter out if any of the benchmarks have not been produced
+    df = df[has_no_nan_values(df, _benchmark_cols)]
+    return df

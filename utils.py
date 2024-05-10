@@ -7,9 +7,8 @@ from huggingface_hub import HfApi
 
 from src.display.utils import AutoEvalColumnQA, AutoEvalColumnLongDoc, COLS_QA, COLS_LONG_DOC, QA_BENCHMARK_COLS, LONG_DOC_BENCHMARK_COLS
 from src.benchmarks import BENCHMARK_COLS_QA, BENCHMARK_COLS_LONG_DOC, BenchmarksQA, BenchmarksLongDoc
-from src.leaderboard.read_evals import FullEvalResult
+from src.leaderboard.read_evals import FullEvalResult, get_leaderboard_df
 from typing import List
-from src.populate import get_leaderboard_df
 
 
 def filter_models(df: pd.DataFrame, reranking_query: list) -> pd.DataFrame:

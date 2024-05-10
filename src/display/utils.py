@@ -19,18 +19,22 @@ class ColumnContent:
     never_hidden: bool = False
 
 
+COL_NAME_AVG = "Average ⬆️"
+COL_NAME_RETRIEVAL_MODEL = "Retrieval Model"
+COL_NAME_RERANKING_MODEL = "Reranking Model"
+
 def make_autoevalcolumn(cls_name="BenchmarksQA", benchmarks=BenchmarksQA):
     ## Leaderboard columns
     auto_eval_column_dict = []
     # Init
     auto_eval_column_dict.append(
-        ["retrieval_model", ColumnContent, ColumnContent("Retrieval Model", "markdown", True, never_hidden=True)]
+        ["retrieval_model", ColumnContent, ColumnContent(COL_NAME_RETRIEVAL_MODEL, "markdown", True, never_hidden=True)]
     )
     auto_eval_column_dict.append(
-        ["reranking_model", ColumnContent, ColumnContent("Reranking Model", "markdown", True, never_hidden=True)]
+        ["reranking_model", ColumnContent, ColumnContent(COL_NAME_RERANKING_MODEL, "markdown", True, never_hidden=True)]
     )
     auto_eval_column_dict.append(
-        ["average", ColumnContent, ColumnContent("Average ⬆️", "number", True)]
+        ["average", ColumnContent, ColumnContent(COL_NAME_AVG, "number", True)]
     )
     for benchmark in benchmarks:
         auto_eval_column_dict.append(
