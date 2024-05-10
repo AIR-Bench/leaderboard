@@ -291,6 +291,14 @@ with demo:
                 with gr.Row():
                     gr.Markdown("## ✉️Submit your model here!", elem_classes="markdown-text")
                 with gr.Row():
+                    with gr.Column():
+                        benchmark_version = gr.Dropdown(
+                            ['AIR-Bench_24.04',], value=['AIR-Bench_24.04',], interactive=True, label="AIR-Bench Version")
+                    with gr.Column():
+                        model_name_textbox = gr.Textbox(label="Model name")
+                    with gr.Column():
+                        model_url = gr.Textbox(label="Model URL")
+                with gr.Row():
                     file_output = gr.File()
                 with gr.Row():
                     upload_button = gr.UploadButton("Click to submit evaluation", file_count="multiple")

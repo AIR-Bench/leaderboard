@@ -1,14 +1,10 @@
-import pandas as pd
-import os
-
-from src.display.formatting import styled_error, styled_message, styled_warning
-
-from huggingface_hub import HfApi
-
-from src.display.utils import AutoEvalColumnQA, AutoEvalColumnLongDoc, COLS_QA, COLS_LONG_DOC, QA_BENCHMARK_COLS, LONG_DOC_BENCHMARK_COLS
-from src.benchmarks import BENCHMARK_COLS_QA, BENCHMARK_COLS_LONG_DOC, BenchmarksQA, BenchmarksLongDoc
-from src.leaderboard.read_evals import FullEvalResult, get_leaderboard_df
 from typing import List
+
+import pandas as pd
+
+from src.benchmarks import BENCHMARK_COLS_QA, BENCHMARK_COLS_LONG_DOC, BenchmarksQA, BenchmarksLongDoc
+from src.display.utils import AutoEvalColumnQA, AutoEvalColumnLongDoc, COLS_QA, COLS_LONG_DOC
+from src.leaderboard.read_evals import FullEvalResult, get_leaderboard_df
 
 
 def filter_models(df: pd.DataFrame, reranking_query: list) -> pd.DataFrame:
@@ -41,7 +37,7 @@ def search_table(df: pd.DataFrame, query: str) -> pd.DataFrame:
     return df[(df[AutoEvalColumnQA.retrieval_model.name].str.contains(query, case=False))]
 
 
-def select_columns(df: pd.DataFrame, domain_query: list, language_query: list, task: str="qa") -> pd.DataFrame:
+def select_columns(df: pd.DataFrame, domain_query: list, language_query: list, task: str = "qa") -> pd.DataFrame:
     if task == "qa":
         always_here_cols = [
             AutoEvalColumnQA.retrieval_model.name,
@@ -111,7 +107,7 @@ def update_metric(
         query: str,
 ) -> pd.DataFrame:
     if task == 'qa':
-        leaderboard_df = get_leaderboard_df(raw_data, COLS_QA, QA_BENCHMARK_COLS, task=task, metric=metric)
+        leaderboard_df = get_leaderboard_df(raw_data, task=task, metric=metric)
         return update_table(
             leaderboard_df,
             domains,
@@ -120,7 +116,7 @@ def update_metric(
             query
         )
     elif task == 'long_doc':
-        leaderboard_df = get_leaderboard_df(raw_data, COLS_LONG_DOC, LONG_DOC_BENCHMARK_COLS, task=task, metric=metric)
+        leaderboard_df = get_leaderboard_df(raw_data, task=task, metric=metric)
         return update_table_long_doc(
             leaderboard_df,
             domains,

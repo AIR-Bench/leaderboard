@@ -15,3 +15,4 @@ logs/
 .idea/
 .venv/
 toys/
+.DS_Store
