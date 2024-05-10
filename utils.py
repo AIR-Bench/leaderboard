@@ -3,7 +3,7 @@ from typing import List
 import pandas as pd
 
 from src.benchmarks import BENCHMARK_COLS_QA, BENCHMARK_COLS_LONG_DOC, BenchmarksQA, BenchmarksLongDoc
-from src.display.utils import AutoEvalColumnQA, AutoEvalColumnLongDoc, COLS_QA, COLS_LONG_DOC
+from src.display.utils import AutoEvalColumnQA, AutoEvalColumnLongDoc, COLS_QA, COLS_LONG_DOC, COL_NAME_RANK, COL_NAME_AVG, COL_NAME_RERANKING_MODEL, COL_NAME_RETRIEVAL_MODEL
 from src.leaderboard.read_evals import FullEvalResult, get_leaderboard_df
 
 
@@ -37,25 +37,28 @@ def search_table(df: pd.DataFrame, query: str) -> pd.DataFrame:
     return df[(df[AutoEvalColumnQA.retrieval_model.name].str.contains(query, case=False))]
 
 
-def select_columns(df: pd.DataFrame, domain_query: list, language_query: list, task: str = "qa") -> pd.DataFrame:
+def get_default_cols(task: str, columns: list, add_fix_cols: bool=True) -> list:
     if task == "qa":
-        always_here_cols = [
-            AutoEvalColumnQA.retrieval_model.name,
-            AutoEvalColumnQA.reranking_model.name,
-            AutoEvalColumnQA.average.name
-        ]
-        cols = list(frozenset(COLS_QA).intersection(frozenset(BENCHMARK_COLS_QA)))
+        cols = list(frozenset(COLS_QA).intersection(frozenset(BENCHMARK_COLS_QA)).intersection(frozenset(columns)))
     elif task == "long_doc":
-        always_here_cols = [
-            AutoEvalColumnLongDoc.retrieval_model.name,
-            AutoEvalColumnLongDoc.reranking_model.name,
-            AutoEvalColumnLongDoc.average.name
-        ]
-        cols = list(frozenset(COLS_LONG_DOC).intersection(frozenset(BENCHMARK_COLS_LONG_DOC)))
+        cols = list(frozenset(COLS_LONG_DOC).intersection(frozenset(BENCHMARK_COLS_LONG_DOC)).intersection(frozenset(columns)))
+    else:
+        raise NotImplemented
+    if add_fix_cols:
+        cols = FIXED_COLS + cols
+    return cols
+
+FIXED_COLS = [
+        COL_NAME_RANK,
+        COL_NAME_RETRIEVAL_MODEL,
+        COL_NAME_RERANKING_MODEL,
+        COL_NAME_AVG,
+    ]
+
+def select_columns(df: pd.DataFrame, domain_query: list, language_query: list, task: str = "qa") -> pd.DataFrame:
+    cols = get_default_cols(task=task, columns=df.columns, add_fix_cols=False)
     selected_cols = []
     for c in cols:
-        if c not in df.columns:
-            continue
         if task == "qa":
             eval_col = BenchmarksQA[c].value
         elif task == "long_doc":
@@ -66,8 +69,10 @@ def select_columns(df: pd.DataFrame, domain_query: list, language_query: list, t
             continue
         selected_cols.append(c)
     # We use COLS to maintain sorting
-    filtered_df = df[always_here_cols + selected_cols]
-    filtered_df[always_here_cols[2]] = filtered_df[selected_cols].mean(axis=1).round(decimals=2)
+    filtered_df = df[FIXED_COLS + selected_cols]
+    filtered_df[COL_NAME_AVG] = filtered_df[selected_cols].mean(axis=1).round(decimals=2)
+    filtered_df[COL_NAME_RANK] = filtered_df[COL_NAME_AVG].rank(ascending=False, method="dense")
+
     return filtered_df
 
 

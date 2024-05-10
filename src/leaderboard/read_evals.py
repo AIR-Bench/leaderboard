@@ -9,8 +9,16 @@ import pandas as pd
 
 from src.benchmarks import get_safe_name
 from src.display.formatting import has_no_nan_values
-from src.display.utils import COL_NAME_RERANKING_MODEL, COL_NAME_RETRIEVAL_MODEL, COLS_QA, QA_BENCHMARK_COLS, \
-    COLS_LONG_DOC, LONG_DOC_BENCHMARK_COLS, COL_NAME_AVG
+from src.display.utils import (
+    COL_NAME_RERANKING_MODEL,
+    COL_NAME_RETRIEVAL_MODEL,
+    COLS_QA,
+    QA_BENCHMARK_COLS,
+    COLS_LONG_DOC,
+    LONG_DOC_BENCHMARK_COLS,
+    COL_NAME_AVG,
+    COL_NAME_RANK
+)
 
 
 @dataclass
@@ -158,6 +166,7 @@ def get_leaderboard_df(raw_data: List[FullEvalResult], task: str, metric: str) -
     df[COL_NAME_AVG] = df[list(_benchmark_cols)].mean(axis=1).round(decimals=2)
     df = df.sort_values(by=[COL_NAME_AVG], ascending=False)
     df.reset_index(inplace=True)
+    df[COL_NAME_RANK] = df[COL_NAME_AVG].rank(ascending=False, method="dense")
 
     _cols = frozenset(cols).intersection(frozenset(df.columns.to_list()))
     df = df[_cols].round(decimals=2)
