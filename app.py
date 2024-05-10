@@ -6,6 +6,7 @@ from src.about import (
     INTRODUCTION_TEXT,
     LLM_BENCHMARKS_TEXT,
     TITLE,
+    EVALUATION_QUEUE_TEXT
 )
 from src.display.css_html_js import custom_css
 from src.display.utils import (
@@ -13,13 +14,14 @@ from src.display.utils import (
     LONG_DOC_BENCHMARK_COLS,
     COLS_QA,
     COLS_LONG_DOC,
+    EVAL_COLS,
     TYPES,
     AutoEvalColumnQA,
     fields
 )
 from src.envs import API, EVAL_REQUESTS_PATH, EVAL_RESULTS_PATH, QUEUE_REPO, REPO_ID, RESULTS_REPO, TOKEN
-from src.populate import get_leaderboard_df
-from utils import update_table, update_metric, update_table_long_doc
+from src.populate import get_leaderboard_df, get_evaluation_queue_df
+from utils import update_table, update_metric, update_table_long_doc, upload_file
 from src.benchmarks import DOMAIN_COLS_QA, LANG_COLS_QA, DOMAIN_COLS_LONG_DOC, LANG_COLS_LONG_DOC, metric_list
 
 
@@ -75,11 +77,11 @@ def update_metric_long_doc(
     return update_metric(raw_data_qa, 'long_doc', metric, domains, langs, reranking_model, query)
 
 
-# (
-#     finished_eval_queue_df,
-#     running_eval_queue_df,
-#     pending_eval_queue_df,
-# ) = get_evaluation_queue_df(EVAL_REQUESTS_PATH, EVAL_COLS)
+(
+    finished_eval_queue_df,
+    running_eval_queue_df,
+    pending_eval_queue_df,
+) = get_evaluation_queue_df(EVAL_REQUESTS_PATH, EVAL_COLS)
 
 
 demo = gr.Blocks(css=custom_css)
@@ -305,8 +307,50 @@ with demo:
                 queue=True
             )
 
-        with gr.TabItem("📝 About", elem_id="llm-benchmark-tab-table", id=2):
-            gr.Markdown(LLM_BENCHMARKS_TEXT, elem_classes="markdown-text")
+        with gr.TabItem("🚀Submit here!", elem_id="submit-tab-table", id=2):
+            with gr.Column():
+                with gr.Row():
+                    gr.Markdown(EVALUATION_QUEUE_TEXT, elem_classes="markdown-text")
+                with gr.Row():
+                    with gr.Accordion(f"✅ Finished Evaluations ({len(finished_eval_queue_df)})", open=False):
+                        with gr.Row():
+                            finished_eval_table = gr.components.Dataframe(
+                                value=finished_eval_queue_df,
+                                row_count=5,
+                            )
+                with gr.Row():
+                    with gr.Accordion(
+                            f"🔄 Running Evaluation Queue ({len(running_eval_queue_df)})",
+                            open=False,
+                    ):
+                        with gr.Row():
+                            running_eval_table = gr.components.Dataframe(
+                                value=running_eval_queue_df,
+                                row_count=5,
+                            )
+                with gr.Row():
+                    with gr.Accordion(
+                            f"⏳ Pending Evaluation Queue ({len(pending_eval_queue_df)})",
+                            open=False,
+                    ):
+                        with gr.Row():
+                            pending_eval_table = gr.components.Dataframe(
+                                value=pending_eval_queue_df,
+                                row_count=5,
+                            )
+                with gr.Row():
+                    gr.Markdown("## ✉️Submit your model here!", elem_classes="markdown-text")
+                # with gr.Row():
+                #     with gr.Column():
+                #         model_name_textbox = gr.Textbox(label="Model name")
+                #     with gr.Column():
+                #         model_url = gr.Textbox(label="Model URL")
+                    file_output = gr.File()
+                    upload_button = gr.UploadButton("Click to submit evaluation", file_count="multiple")
+                    upload_button.upload(upload_file, upload_button, file_output)
+
+        # with gr.TabItem("📝 About", elem_id="llm-benchmark-tab-table", id=3):
+        #     gr.Markdown(LLM_BENCHMARKS_TEXT, elem_classes="markdown-text")
 
 scheduler = BackgroundScheduler()
 scheduler.add_job(restart_space, "interval", seconds=1800)

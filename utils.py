@@ -1,4 +1,9 @@
 import pandas as pd
+import os
+
+from src.display.formatting import styled_error, styled_message, styled_warning
+
+from huggingface_hub import HfApi
 
 from src.display.utils import AutoEvalColumnQA, AutoEvalColumnLongDoc, COLS_QA, COLS_LONG_DOC, QA_BENCHMARK_COLS, LONG_DOC_BENCHMARK_COLS
 from src.benchmarks import BENCHMARK_COLS_QA, BENCHMARK_COLS_LONG_DOC, BenchmarksQA, BenchmarksLongDoc
@@ -124,3 +129,14 @@ def update_metric(
             reranking_model,
             query
         )
+
+
+def upload_file(files):
+    file_paths = [file.name for file in files]
+    print(f"file uploaded: {file_paths}")
+    # for fp in file_paths:
+    #     # upload the file
+    #     print(file_paths)
+    #     HfApi(token="").upload_file(...)
+    #     os.remove(fp)
+    return file_paths
