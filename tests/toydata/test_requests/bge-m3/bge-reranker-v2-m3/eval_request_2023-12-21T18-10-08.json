@@ -1,6 +1,0 @@
-{
-  "retrieval_model": "BAAI/bge-m3",
-  "reranking_model": "BAAI/bge-reranker-v2-m3",
-  "status": "RUNNING",
-  "submitted_time": "2023-12-21T18:10:08"
-}

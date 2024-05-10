@@ -91,21 +91,6 @@ class FullEvalResult:
                 results[eval_result.eval_name][get_safe_name(benchmark_name)] = value
         return [v for v in results.values()]
 
-    def update_with_request_file(self, request_path):
-        """
-        Update the request file
-        """
-        request_file = get_request_file_for_model(
-            request_path, self.retrieval_model, self.reranking_model
-        )
-
-        try:
-            with open(request_file, "r") as f:
-                request = json.load(f)
-            self.date = request.get("submitted_time", "")
-        except Exception:
-            print(f"Failed to find request file for {self.retrieval_model}, {self.reranking_model}: {request_path}")
-
 
 def get_request_file_for_model(requests_path, retrieval_model_name, reranking_model_name):
     """
@@ -130,7 +115,7 @@ def get_request_file_for_model(requests_path, retrieval_model_name, reranking_mo
     return request_file
 
 
-def get_raw_eval_results(results_path: str, requests_path: str) -> List[FullEvalResult]:
+def get_raw_eval_results(results_path: str) -> List[FullEvalResult]:
     """
     Load the evaluation results from a json file
     """
@@ -151,14 +136,7 @@ def get_raw_eval_results(results_path: str, requests_path: str) -> List[FullEval
     for model_result_filepath in model_result_filepaths:
         # create evaluation results
         eval_result = FullEvalResult.init_from_json_file(model_result_filepath)
-        # get the latest result that is finished
-        eval_result.update_with_request_file(requests_path)
-        latest_date_str = eval_result.date.replace(":", "-")
-        model_result_date_str = model_result_filepath.split('/')[-1
-        ].removeprefix("results_").removesuffix(".json")
-        if latest_date_str != model_result_date_str:
-            print(f'file skipped: {model_result_filepath}')
-            continue
+        model_result_date_str = model_result_filepath.split('/')[-1].removeprefix("results_").removesuffix(".json")
         print(f'file loaded: {model_result_filepath}')
         eval_name = eval_result.eval_name
         eval_results[eval_name] = eval_result
