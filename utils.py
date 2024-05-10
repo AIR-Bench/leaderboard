@@ -2,6 +2,10 @@ import pandas as pd
 
 from src.display.utils import AutoEvalColumnQA, COLS
 from src.benchmarks import BENCHMARK_COLS_QA, BenchmarksQA
+from src.leaderboard.read_evals import FullEvalResult
+from typing import List
+from src.populate import get_leaderboard_df
+from src.display.utils import COLS, QA_BENCHMARK_COLS
 
 
 def filter_models(df: pd.DataFrame, reranking_query: list) -> pd.DataFrame:
@@ -69,3 +73,22 @@ def update_table(
     filtered_df = filter_queries(query, filtered_df)
     df = select_columns(filtered_df, domains, langs)
     return df
+
+
+def update_metric(
+        raw_data: List[FullEvalResult],
+        metric: str,
+        domains: list,
+        langs: list,
+        reranking_model: list,
+        query: str,
+) -> pd.DataFrame:
+    leaderboard_df = get_leaderboard_df(raw_data, COLS, QA_BENCHMARK_COLS, task='qa', metric=metric)
+    hidden_df = leaderboard_df
+    return update_table(
+        hidden_df,
+        domains,
+        langs,
+        reranking_model,
+        query
+    )

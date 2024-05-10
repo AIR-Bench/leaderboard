@@ -17,9 +17,11 @@ from src.display.utils import (
 )
 from src.envs import API, EVAL_REQUESTS_PATH, EVAL_RESULTS_PATH, QUEUE_REPO, REPO_ID, RESULTS_REPO, TOKEN
 from src.populate import get_leaderboard_df
-from utils import update_table
+from utils import update_table, update_metric
 from src.benchmarks import DOMAIN_COLS_QA, LANG_COLS_QA, metric_list
 
+
+from functools import partial
 
 def restart_space():
     API.restart_space(repo_id=REPO_ID)
@@ -41,11 +43,21 @@ def restart_space():
 # except Exception:
 #     restart_space()
 
-raw_data_qa, original_df_qa = get_leaderboard_df(
-    EVAL_RESULTS_PATH, EVAL_REQUESTS_PATH, COLS, QA_BENCHMARK_COLS, task='qa', metric='ndcg_at_3')
+from src.leaderboard.read_evals import get_raw_eval_results
+raw_data_qa = get_raw_eval_results(EVAL_RESULTS_PATH, EVAL_REQUESTS_PATH)
+original_df_qa = get_leaderboard_df(raw_data_qa, COLS, QA_BENCHMARK_COLS, task='qa', metric='ndcg_at_3')
 print(f'data loaded: {len(raw_data_qa)}, {original_df_qa.shape}')
 leaderboard_df = original_df_qa.copy()
 
+
+def update_metric_qa(
+        metric: str,
+        domains: list,
+        langs: list,
+        reranking_model: list,
+        query: str,
+):
+    return update_metric(raw_data_qa, metric, domains, langs, reranking_model, query)
 # (
 #     finished_eval_queue_df,
 #     running_eval_queue_df,
@@ -99,7 +111,7 @@ with demo:
                 with gr.Column(min_width=320):
                     selected_metric = gr.Dropdown(
                         choices=metric_list,
-                        value=metric_list[0],
+                        value=metric_list[1],
                         label="Select the metric",
                         interactive=True,
                         elem_id="metric-select",
@@ -117,11 +129,13 @@ with demo:
 
             # Dummy leaderboard for handling the case when the user uses backspace key
             hidden_leaderboard_table_for_search = gr.components.Dataframe(
-                value=original_df_qa,
+                value=leaderboard_df,
                 # headers=COLS,
                 # datatype=TYPES,
                 visible=False,
             )
+
+            # Set search_bar listener
             search_bar.submit(
                 update_table,
                 [
@@ -133,6 +147,8 @@ with demo:
                 ],
                 leaderboard_table,
             )
+
+            # Set column-wise listener
             for selector in [
                 selected_domains, selected_langs, selected_rerankings
             ]:
@@ -148,6 +164,20 @@ with demo:
                     leaderboard_table,
                     queue=True,
                 )
+
+            # set metric listener
+            selected_metric.change(
+                update_metric_qa,
+                [
+                    selected_metric,
+                    selected_domains,
+                    selected_langs,
+                    selected_rerankings,
+                    search_bar,
+                ],
+                leaderboard_table,
+                queue=True
+            )
 
         with gr.TabItem("📝 About", elem_id="llm-benchmark-tab-table", id=2):
             gr.Markdown(LLM_BENCHMARKS_TEXT, elem_classes="markdown-text")

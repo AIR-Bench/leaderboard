@@ -5,31 +5,30 @@ import pandas as pd
 
 from src.display.formatting import has_no_nan_values, make_clickable_model
 from src.display.utils import AutoEvalColumnQA, EvalQueueColumn
-from src.leaderboard.read_evals import get_raw_eval_results, EvalResult
-from typing import Tuple
+from src.leaderboard.read_evals import get_raw_eval_results, EvalResult, FullEvalResult
+from typing import Tuple, List
 
 
-def get_leaderboard_df(results_path: str, requests_path: str, cols: list, benchmark_cols: list, task: str, metric: str) -> Tuple[list[EvalResult], pd.DataFrame]:
+def get_leaderboard_df(raw_data: List[FullEvalResult], cols: list, benchmark_cols: list, task: str, metric: str) -> pd.DataFrame:
     """Creates a dataframe from all the individual experiment results"""
-    raw_data = get_raw_eval_results(results_path, requests_path)
-    print(f"raw_data loaded: {len(raw_data)}")
     all_data_json = []
     for v in raw_data:
         all_data_json += v.to_dict(task=task, metric=metric)
-
-    print(f'records loaded: {len(all_data_json)}')
     df = pd.DataFrame.from_records(all_data_json)
     print(f'dataframe created: {df.shape}')
+
+    # calculate the average score for selected benchmarks
     _benchmark_cols = frozenset(benchmark_cols).intersection(frozenset(df.columns.to_list()))
-    df[AutoEvalColumnQA.average.name] = df[list(_benchmark_cols)].mean(axis=1)
+    df[AutoEvalColumnQA.average.name] = df[list(_benchmark_cols)].mean(axis=1).round(decimals=2)
     df = df.sort_values(by=[AutoEvalColumnQA.average.name], ascending=False)
     df.reset_index(inplace=True)
+
     _cols = frozenset(cols).intersection(frozenset(df.columns.to_list()))
     df = df[_cols].round(decimals=2)
 
     # filter out if any of the benchmarks have not been produced
     df = df[has_no_nan_values(df, _benchmark_cols)]
-    return raw_data, df
+    return df
 
 
 def get_evaluation_queue_df(save_path: str, cols: list) -> list[pd.DataFrame]:
