@@ -113,6 +113,7 @@ class Benchmark:
     lang: str
     task: str
 
+
 qa_benchmark_dict = {}
 long_doc_benchmark_dict = {}
 for task, domain_dict in dataset_dict.items():
@@ -130,7 +131,8 @@ for task, domain_dict in dataset_dict.items():
                     benchmark_name = get_safe_name(benchmark_name)
                     col_name = benchmark_name
                     for metric in metric_list:
-                        long_doc_benchmark_dict[benchmark_name] = Benchmark(benchmark_name, metric, col_name, domain, lang, task)
+                        long_doc_benchmark_dict[benchmark_name] = Benchmark(benchmark_name, metric, col_name, domain,
+                                                                            lang, task)
 
 BenchmarksQA = Enum('BenchmarksQA', qa_benchmark_dict)
 BenchmarksLongDoc = Enum('BenchmarksLongDoc', long_doc_benchmark_dict)
