@@ -345,9 +345,11 @@ with demo:
                 #         model_name_textbox = gr.Textbox(label="Model name")
                 #     with gr.Column():
                 #         model_url = gr.Textbox(label="Model URL")
+                with gr.Row():
                     file_output = gr.File()
+                with gr.Row():
                     upload_button = gr.UploadButton("Click to submit evaluation", file_count="multiple")
-                    upload_button.upload(upload_file, upload_button, file_output)
+                upload_button.upload(upload_file, upload_button, file_output)
 
         # with gr.TabItem("📝 About", elem_id="llm-benchmark-tab-table", id=3):
         #     gr.Markdown(LLM_BENCHMARKS_TEXT, elem_classes="markdown-text")
