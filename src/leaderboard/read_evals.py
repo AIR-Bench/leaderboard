@@ -92,7 +92,7 @@ class FullEvalResult:
             results[eval_result.eval_name][COL_NAME_RETRIEVAL_MODEL] = self.retrieval_model
             results[eval_result.eval_name][COL_NAME_RERANKING_MODEL] = self.reranking_model
 
-            print(f'result loaded: {eval_result.eval_name}')
+            # print(f'result loaded: {eval_result.eval_name}')
             for result in eval_result.results:
                 # add result for each domain, language, and dataset
                 domain = result["domain"]
@@ -127,7 +127,11 @@ def get_raw_eval_results(results_path: str) -> List[FullEvalResult]:
     eval_results = {}
     for model_result_filepath in model_result_filepaths:
         # create evaluation results
-        eval_result = FullEvalResult.init_from_json_file(model_result_filepath)
+        try:
+            eval_result = FullEvalResult.init_from_json_file(model_result_filepath)
+        except UnicodeDecodeError as e:
+            print(f"loading file failed. {model_result_filepath}")
+            continue
         print(f'file loaded: {model_result_filepath}')
         eval_name = eval_result.eval_name
         eval_results[eval_name] = eval_result

@@ -11,7 +11,7 @@ from src.about import (
 from src.display.css_html_js import custom_css
 from src.leaderboard.read_evals import get_raw_eval_results, get_leaderboard_df
 
-from src.envs import API, EVAL_REQUESTS_PATH, EVAL_RESULTS_PATH, REPO_ID, RESULTS_REPO, TOKEN
+from src.envs import API, EVAL_RESULTS_PATH, REPO_ID, RESULTS_REPO, TOKEN
 from utils import update_table, update_metric, update_table_long_doc, upload_file, get_default_cols
 from src.benchmarks import DOMAIN_COLS_QA, LANG_COLS_QA, DOMAIN_COLS_LONG_DOC, LANG_COLS_LONG_DOC, metric_list
 

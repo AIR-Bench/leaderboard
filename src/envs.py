@@ -16,7 +16,6 @@ RESULTS_REPO = f"{OWNER}/results"
 CACHE_PATH = os.getenv("HF_HOME", ".")
 
 # Local caches
-EVAL_REQUESTS_PATH = "/Users/nanwang/Codes/huggingface/nan/leaderboard/toys/toydata/requests"  # os.path.join(CACHE_PATH, "eval-queue")
-EVAL_RESULTS_PATH = "/Users/nanwang/Codes/huggingface/nan/leaderboard/toys/toydata/results"  #os.path.join(CACHE_PATH, "eval-results")
+EVAL_RESULTS_PATH = "/Users/nanwang/Codes/huggingface/nan/results/demo-leaderboard"  #os.path.join(CACHE_PATH, "eval-results")
 
 API = HfApi(token=TOKEN)
