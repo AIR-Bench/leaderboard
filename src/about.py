@@ -46,7 +46,7 @@ AIR-Bench: Automated Heterogeneous Information Retrieval Benchmark
 """
 
 # Which evaluations are you running? how can people reproduce what you have?
-LLM_BENCHMARKS_TEXT = f"""
+BENCHMARKS_TEXT = f"""
 ## How it works
 
 ## Reproducibility

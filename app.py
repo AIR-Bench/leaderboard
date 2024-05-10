@@ -4,23 +4,14 @@ from huggingface_hub import snapshot_download
 
 from src.about import (
     INTRODUCTION_TEXT,
-    LLM_BENCHMARKS_TEXT,
+    BENCHMARKS_TEXT,
     TITLE,
     EVALUATION_QUEUE_TEXT
 )
 from src.display.css_html_js import custom_css
-from src.display.utils import (
-    QA_BENCHMARK_COLS,
-    LONG_DOC_BENCHMARK_COLS,
-    COLS_QA,
-    COLS_LONG_DOC,
-    EVAL_COLS,
-    TYPES,
-    AutoEvalColumnQA,
-    fields
-)
-from src.envs import API, EVAL_REQUESTS_PATH, EVAL_RESULTS_PATH, QUEUE_REPO, REPO_ID, RESULTS_REPO, TOKEN
-from src.populate import get_leaderboard_df, get_evaluation_queue_df
+from src.leaderboard.read_evals import get_raw_eval_results, get_leaderboard_df
+
+from src.envs import API, EVAL_REQUESTS_PATH, EVAL_RESULTS_PATH, REPO_ID, RESULTS_REPO, TOKEN
 from utils import update_table, update_metric, update_table_long_doc, upload_file
 from src.benchmarks import DOMAIN_COLS_QA, LANG_COLS_QA, DOMAIN_COLS_LONG_DOC, LANG_COLS_LONG_DOC, metric_list
 
@@ -28,14 +19,6 @@ from src.benchmarks import DOMAIN_COLS_QA, LANG_COLS_QA, DOMAIN_COLS_LONG_DOC, L
 def restart_space():
     API.restart_space(repo_id=REPO_ID)
 
-# try:
-#     print(EVAL_REQUESTS_PATH)
-#     snapshot_download(
-#         repo_id=QUEUE_REPO, local_dir=EVAL_REQUESTS_PATH, repo_type="dataset", tqdm_class=None, etag_timeout=30,
-#         token=TOKEN
-#     )
-# except Exception:
-#     restart_space()
 # try:
 #     print(EVAL_RESULTS_PATH)
 #     snapshot_download(
@@ -45,17 +28,18 @@ def restart_space():
 # except Exception:
 #     restart_space()
 
-from src.leaderboard.read_evals import get_raw_eval_results
-raw_data_qa = get_raw_eval_results(EVAL_RESULTS_PATH, EVAL_REQUESTS_PATH)
-original_df_qa = get_leaderboard_df(raw_data_qa, COLS_QA, QA_BENCHMARK_COLS, task='qa', metric='ndcg_at_3')
-original_df_long_doc = get_leaderboard_df(raw_data_qa, COLS_LONG_DOC, LONG_DOC_BENCHMARK_COLS, task='long_doc', metric='ndcg_at_3')
-print(f'raw data: {len(raw_data_qa)}')
+raw_data = get_raw_eval_results(EVAL_RESULTS_PATH)
+
+original_df_qa = get_leaderboard_df(
+    raw_data, task='qa', metric='ndcg_at_3')
+original_df_long_doc = get_leaderboard_df(
+    raw_data, task='long_doc', metric='ndcg_at_3')
+print(f'raw data: {len(raw_data)}')
 print(f'QA data loaded: {original_df_qa.shape}')
 print(f'Long-Doc data loaded: {len(original_df_long_doc)}')
 
-leaderboard_df = original_df_qa.copy()
+leaderboard_df_qa = original_df_qa.copy()
 leaderboard_df_long_doc = original_df_long_doc.copy()
-print(leaderboard_df_long_doc.head())
 
 
 def update_metric_qa(
@@ -65,7 +49,7 @@ def update_metric_qa(
         reranking_model: list,
         query: str,
 ):
-    return update_metric(raw_data_qa, 'qa', metric, domains, langs, reranking_model, query)
+    return update_metric(raw_data, 'qa', metric, domains, langs, reranking_model, query)
 
 def update_metric_long_doc(
         metric: str,
@@ -74,14 +58,7 @@ def update_metric_long_doc(
         reranking_model: list,
         query: str,
 ):
-    return update_metric(raw_data_qa, 'long_doc', metric, domains, langs, reranking_model, query)
-
-
-(
-    finished_eval_queue_df,
-    running_eval_queue_df,
-    pending_eval_queue_df,
-) = get_evaluation_queue_df(EVAL_REQUESTS_PATH, EVAL_COLS)
+    return update_metric(raw_data, 'long_doc', metric, domains, langs, reranking_model, query)
 
 
 demo = gr.Blocks(css=custom_css)
@@ -128,7 +105,7 @@ with demo:
                             interactive=True
                         )
                     # select reranking model
-                    reranking_models = list(frozenset([eval_result.reranking_model for eval_result in raw_data_qa]))
+                    reranking_models = list(frozenset([eval_result.reranking_model for eval_result in raw_data]))
                     with gr.Row():
                         selected_rerankings = gr.CheckboxGroup(
                             choices=reranking_models,
@@ -139,7 +116,7 @@ with demo:
                         )
 
             leaderboard_table = gr.components.Dataframe(
-                value=leaderboard_df,
+                value=leaderboard_df_qa,
                 # headers=shown_columns,
                 # datatype=TYPES,
                 elem_id="leaderboard-table",
@@ -149,7 +126,7 @@ with demo:
 
             # Dummy leaderboard for handling the case when the user uses backspace key
             hidden_leaderboard_table_for_search = gr.components.Dataframe(
-                value=leaderboard_df,
+                value=leaderboard_df_qa,
                 # headers=COLS,
                 # datatype=TYPES,
                 visible=False,
@@ -236,7 +213,7 @@ with demo:
                             interactive=True
                         )
                     # select reranking model
-                    reranking_models = list(frozenset([eval_result.reranking_model for eval_result in raw_data_qa]))
+                    reranking_models = list(frozenset([eval_result.reranking_model for eval_result in raw_data]))
                     with gr.Row():
                         selected_rerankings = gr.CheckboxGroup(
                             choices=reranking_models,
@@ -312,47 +289,15 @@ with demo:
                 with gr.Row():
                     gr.Markdown(EVALUATION_QUEUE_TEXT, elem_classes="markdown-text")
                 with gr.Row():
-                    with gr.Accordion(f"✅ Finished Evaluations ({len(finished_eval_queue_df)})", open=False):
-                        with gr.Row():
-                            finished_eval_table = gr.components.Dataframe(
-                                value=finished_eval_queue_df,
-                                row_count=5,
-                            )
-                with gr.Row():
-                    with gr.Accordion(
-                            f"🔄 Running Evaluation Queue ({len(running_eval_queue_df)})",
-                            open=False,
-                    ):
-                        with gr.Row():
-                            running_eval_table = gr.components.Dataframe(
-                                value=running_eval_queue_df,
-                                row_count=5,
-                            )
-                with gr.Row():
-                    with gr.Accordion(
-                            f"⏳ Pending Evaluation Queue ({len(pending_eval_queue_df)})",
-                            open=False,
-                    ):
-                        with gr.Row():
-                            pending_eval_table = gr.components.Dataframe(
-                                value=pending_eval_queue_df,
-                                row_count=5,
-                            )
-                with gr.Row():
                     gr.Markdown("## ✉️Submit your model here!", elem_classes="markdown-text")
-                # with gr.Row():
-                #     with gr.Column():
-                #         model_name_textbox = gr.Textbox(label="Model name")
-                #     with gr.Column():
-                #         model_url = gr.Textbox(label="Model URL")
                 with gr.Row():
                     file_output = gr.File()
                 with gr.Row():
                     upload_button = gr.UploadButton("Click to submit evaluation", file_count="multiple")
                 upload_button.upload(upload_file, upload_button, file_output)
 
-        # with gr.TabItem("📝 About", elem_id="llm-benchmark-tab-table", id=3):
-        #     gr.Markdown(LLM_BENCHMARKS_TEXT, elem_classes="markdown-text")
+        with gr.TabItem("📝 About", elem_id="llm-benchmark-tab-table", id=3):
+            gr.Markdown(BENCHMARKS_TEXT, elem_classes="markdown-text")
 
 scheduler = BackgroundScheduler()
 scheduler.add_job(restart_space, "interval", seconds=1800)

@@ -37,6 +37,7 @@ def test_get_raw_eval_results():
     assert results[1].eval_name == "bge-m3_bge-reranker-v2-m3"
     assert len(results[1].results) == 6
 
+
 def test_get_leaderboard_df():
     results_path = cur_fp.parents[2] / "toydata" / "test_results"
     raw_data = get_raw_eval_results(results_path)
@@ -49,7 +50,7 @@ def test_get_leaderboard_df():
     assert df["Reranking Model"][0] == "bge-reranker-v2-m3"
     assert df["Reranking Model"][1] == "NoReranker"
     assert df["Average ⬆️"][0] > df["Average ⬆️"][1]
-    assert not df[['Average ⬆️', 'wiki_en', 'wiki_zh',]].isnull().values.any()
+    assert not df[['Average ⬆️', 'wiki_en', 'wiki_zh', ]].isnull().values.any()
 
 
 def test_get_leaderboard_df_long_doc():
@@ -64,4 +65,4 @@ def test_get_leaderboard_df_long_doc():
     assert df["Reranking Model"][0] == "bge-reranker-v2-m3"
     assert df["Reranking Model"][1] == "NoReranker"
     assert df["Average ⬆️"][0] > df["Average ⬆️"][1]
-    assert not df[['Average ⬆️', 'law_en_lex_files_500k_600k',]].isnull().values.any()
+    assert not df[['Average ⬆️', 'law_en_lex_files_500k_600k', ]].isnull().values.any()
