@@ -38,11 +38,11 @@ NUM_FEWSHOT = 0 # Change with your few shot
 
 
 # Your leaderboard name
-TITLE = """<h1 align="center" id="space-title">Demo leaderboard</h1>"""
+TITLE = """<h1 align="center" id="space-title">AIR-Bench</h1>"""
 
 # What does your leaderboard evaluate?
 INTRODUCTION_TEXT = """
-Intro text
+AIR-Bench: Automated Heterogeneous Information Retrieval Benchmark
 """
 
 # Which evaluations are you running? how can people reproduce what you have?

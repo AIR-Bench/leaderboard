@@ -21,8 +21,6 @@ from utils import update_table, update_metric
 from src.benchmarks import DOMAIN_COLS_QA, LANG_COLS_QA, metric_list
 
 
-from functools import partial
-
 def restart_space():
     API.restart_space(repo_id=REPO_ID)
 
@@ -71,15 +69,25 @@ with demo:
     gr.Markdown(INTRODUCTION_TEXT, elem_classes="markdown-text")
 
     with gr.Tabs(elem_classes="tab-buttons") as tabs:
-        with gr.TabItem("QA", elem_id="llm-benchmark-tab-table", id=0):
+        with gr.TabItem("QA", elem_id="qa-benchmark-tab-table", id=0):
             with gr.Row():
                 with gr.Column():
+                    # search bar for model name
                     with gr.Row():
                         search_bar = gr.Textbox(
                             placeholder=" 🔍 Search for your model (separate multiple queries with `;`) and press ENTER...",
                             show_label=False,
                             elem_id="search-bar",
                         )
+                    # select the metric
+                    selected_metric = gr.Dropdown(
+                        choices=metric_list,
+                        value=metric_list[1],
+                        label="Select the metric",
+                        interactive=True,
+                        elem_id="metric-select",
+                    )
+                with gr.Column(min_width=320):
                     # select domain
                     with gr.Row():
                         selected_domains = gr.CheckboxGroup(
@@ -98,7 +106,7 @@ with demo:
                             elem_id="language-column-select",
                             interactive=True
                         )
-                    # select reranking models
+                    # select reranking model
                     reranking_models = list(frozenset([eval_result.reranking_model for eval_result in raw_data_qa]))
                     with gr.Row():
                         selected_rerankings = gr.CheckboxGroup(
@@ -108,16 +116,7 @@ with demo:
                             elem_id="reranking-select",
                             interactive=True
                         )
-                with gr.Column(min_width=320):
-                    selected_metric = gr.Dropdown(
-                        choices=metric_list,
-                        value=metric_list[1],
-                        label="Select the metric",
-                        interactive=True,
-                        elem_id="metric-select",
-                    )
 
-            # reload the leaderboard_df and raw_data when selected_metric is changed
             leaderboard_table = gr.components.Dataframe(
                 value=leaderboard_df,
                 # headers=shown_columns,
@@ -178,6 +177,8 @@ with demo:
                 leaderboard_table,
                 queue=True
             )
+
+        # with gr.TabItem("Long Doc", elem_id="long-doc-benchmark-tab-table", id=1):
 
         with gr.TabItem("📝 About", elem_id="llm-benchmark-tab-table", id=2):
             gr.Markdown(LLM_BENCHMARKS_TEXT, elem_classes="markdown-text")
