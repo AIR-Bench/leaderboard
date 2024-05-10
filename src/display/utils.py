@@ -51,20 +51,11 @@ AutoEvalColumnLongDoc = make_autoevalcolumn(
     "AutoEvalColumnLongDoc", BenchmarksLongDoc)
 
 
-## For the queue columns in the submission tab
-@dataclass(frozen=True)
-class EvalQueueColumn:  # Queue column
-    model = ColumnContent("model", "markdown", True)
-    status = ColumnContent("status", "str", True)
-
-
 # Column selection
 COLS_QA = [c.name for c in fields(AutoEvalColumnQA) if not c.hidden]
 COLS_LONG_DOC = [c.name for c in fields(AutoEvalColumnLongDoc) if not c.hidden]
 TYPES = [c.type for c in fields(AutoEvalColumnQA) if not c.hidden]
 COLS_LITE = [c.name for c in fields(AutoEvalColumnQA) if c.displayed_by_default and not c.hidden]
-
-EVAL_COLS = [c.name for c in fields(EvalQueueColumn)]
 
 QA_BENCHMARK_COLS = [t.value.col_name for t in BenchmarksQA]
 
