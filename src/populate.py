@@ -4,7 +4,7 @@ import os
 import pandas as pd
 
 from src.display.formatting import has_no_nan_values, make_clickable_model
-from src.display.utils import AutoEvalColumnQA, EvalQueueColumn
+from src.display.utils import AutoEvalColumnQA, AutoEvalColumnLongDoc, EvalQueueColumn
 from src.leaderboard.read_evals import get_raw_eval_results, EvalResult, FullEvalResult
 from typing import Tuple, List
 
@@ -19,8 +19,13 @@ def get_leaderboard_df(raw_data: List[FullEvalResult], cols: list, benchmark_col
 
     # calculate the average score for selected benchmarks
     _benchmark_cols = frozenset(benchmark_cols).intersection(frozenset(df.columns.to_list()))
-    df[AutoEvalColumnQA.average.name] = df[list(_benchmark_cols)].mean(axis=1).round(decimals=2)
-    df = df.sort_values(by=[AutoEvalColumnQA.average.name], ascending=False)
+    if task == 'qa':
+        df[AutoEvalColumnQA.average.name] = df[list(_benchmark_cols)].mean(axis=1).round(decimals=2)
+        df = df.sort_values(by=[AutoEvalColumnQA.average.name], ascending=False)
+    elif task == "long_doc":
+        df[AutoEvalColumnLongDoc.average.name] = df[list(_benchmark_cols)].mean(axis=1).round(decimals=2)
+        df = df.sort_values(by=[AutoEvalColumnLongDoc.average.name], ascending=False)
+
     df.reset_index(inplace=True)
 
     _cols = frozenset(cols).intersection(frozenset(df.columns.to_list()))

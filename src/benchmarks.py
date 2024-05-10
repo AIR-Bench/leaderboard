@@ -52,19 +52,19 @@ dataset_dict = {
         },
         "healthcare": {
             "en": [
-                "pubmed_100K-200K_1",
-                "pubmed_100K-200K_2",
-                "pubmed_100K-200K_3",
-                "pubmed_40K-50K_5-merged",
-                "pubmed_30K-40K_10-merged"
+                "pubmed_100k-200k_1",
+                "pubmed_100k-200k_2",
+                "pubmed_100k-200k_3",
+                "pubmed_40k-50k_5-merged",
+                "pubmed_30k-40k_10-merged"
             ]
         },
         "law": {
             "en": [
-                "lex_files_300K-400K",
-                "lex_files_400K-500K",
-                "lex_files_500K-600K",
-                "lex_files_600K-700K"
+                "lex_files_300k-400k",
+                "lex_files_400k-500k",
+                "lex_files_500k-600k",
+                "lex_files_600k-700k"
             ]
         }
     }
@@ -121,21 +121,25 @@ for task, domain_dict in dataset_dict.items():
             if task == "qa":
                 benchmark_name = f"{domain}_{lang}"
                 benchmark_name = get_safe_name(benchmark_name)
-                col_name = f"{domain}_{lang}"
+                col_name = benchmark_name
                 for metric in dataset_list:
                     qa_benchmark_dict[benchmark_name] = Benchmark(benchmark_name, metric, col_name, domain, lang, task)
             elif task == "long_doc":
                 for dataset in dataset_list:
-                    col_name = f"{domain}_{lang}_{dataset}"
+                    benchmark_name = f"{domain}_{lang}_{dataset}"
+                    benchmark_name = get_safe_name(benchmark_name)
+                    col_name = benchmark_name
                     for metric in metric_list:
-                        benchmark_name = f"{domain}_{lang}_{dataset}_{metric}"
-                        benchmark_name = get_safe_name(benchmark_name)
                         long_doc_benchmark_dict[benchmark_name] = Benchmark(benchmark_name, metric, col_name, domain, lang, task)
 
 BenchmarksQA = Enum('BenchmarksQA', qa_benchmark_dict)
 BenchmarksLongDoc = Enum('BenchmarksLongDoc', long_doc_benchmark_dict)
 
 BENCHMARK_COLS_QA = [c.col_name for c in qa_benchmark_dict.values()]
+BENCHMARK_COLS_LONG_DOC = [c.col_name for c in long_doc_benchmark_dict.values()]
 
 DOMAIN_COLS_QA = list(frozenset([c.domain for c in qa_benchmark_dict.values()]))
 LANG_COLS_QA = list(frozenset([c.lang for c in qa_benchmark_dict.values()]))
+
+DOMAIN_COLS_LONG_DOC = list(frozenset([c.domain for c in long_doc_benchmark_dict.values()]))
+LANG_COLS_LONG_DOC = list(frozenset([c.lang for c in long_doc_benchmark_dict.values()]))

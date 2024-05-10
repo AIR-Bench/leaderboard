@@ -87,7 +87,7 @@ class FullEvalResult:
                 if task == 'qa':
                     benchmark_name = f"{domain}_{lang}"
                 elif task == 'long_doc':
-                    benchmark_name = f"{domain}_{lang}_{dataset}_{metric}"
+                    benchmark_name = f"{domain}_{lang}_{dataset}"
                 results[eval_result.eval_name][get_safe_name(benchmark_name)] = value
         return [v for v in results.values()]
 

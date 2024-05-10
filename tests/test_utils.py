@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from utils import filter_models, search_table, filter_queries, select_columns
+from utils import filter_models, search_table, filter_queries, select_columns, update_table_long_doc
 
 
 @pytest.fixture
@@ -29,6 +29,29 @@ def toy_df():
     )
 
 
+@pytest.fixture
+def toy_df_long_doc():
+    return pd.DataFrame(
+        {
+            "Retrieval Model": [
+                "bge-m3",
+                "bge-m3",
+                "jina-embeddings-v2-base",
+                "jina-embeddings-v2-base"
+            ],
+            "Reranking Model": [
+                "bge-reranker-v2-m3",
+                "NoReranker",
+                "bge-reranker-v2-m3",
+                "NoReranker"
+            ],
+            "Average ⬆️": [0.6, 0.4, 0.3, 0.2],
+            "law_en_lex_files_300k_400k": [0.4, 0.1, 0.4, 0.3],
+            "law_en_lex_files_400k_500k": [0.8, 0.7, 0.2, 0.1],
+            "law_en_lex_files_500k_600k": [0.8, 0.7, 0.2, 0.1],
+            "law_en_lex_files_600k_700k": [0.4, 0.1, 0.4, 0.3],
+        }
+    )
 def test_filter_models(toy_df):
     df_result = filter_models(toy_df, ["bge-reranker-v2-m3", ])
     assert len(df_result) == 2
@@ -51,3 +74,8 @@ def test_select_columns(toy_df):
     df_result = select_columns(toy_df, ['news',], ['zh',])
     assert len(df_result.columns) == 4
     assert df_result['Average ⬆️'].equals(df_result['news_zh'])
+
+
+def test_update_table_long_doc(toy_df_long_doc):
+    df_result = update_table_long_doc(toy_df_long_doc, ['law',], ['en',], ["bge-reranker-v2-m3", ], "jina")
+    print(df_result)

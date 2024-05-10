@@ -1,11 +1,10 @@
 import pandas as pd
 
-from src.display.utils import AutoEvalColumnQA, COLS
-from src.benchmarks import BENCHMARK_COLS_QA, BenchmarksQA
+from src.display.utils import AutoEvalColumnQA, AutoEvalColumnLongDoc, COLS_QA, COLS_LONG_DOC, QA_BENCHMARK_COLS, LONG_DOC_BENCHMARK_COLS
+from src.benchmarks import BENCHMARK_COLS_QA, BENCHMARK_COLS_LONG_DOC, BenchmarksQA, BenchmarksLongDoc
 from src.leaderboard.read_evals import FullEvalResult
 from typing import List
 from src.populate import get_leaderboard_df
-from src.display.utils import COLS, QA_BENCHMARK_COLS
 
 
 def filter_models(df: pd.DataFrame, reranking_query: list) -> pd.DataFrame:
@@ -38,19 +37,29 @@ def search_table(df: pd.DataFrame, query: str) -> pd.DataFrame:
     return df[(df[AutoEvalColumnQA.retrieval_model.name].str.contains(query, case=False))]
 
 
-def select_columns(df: pd.DataFrame, domain_query: list, language_query: list) -> pd.DataFrame:
-    always_here_cols = [
-        AutoEvalColumnQA.retrieval_model.name,
-        AutoEvalColumnQA.reranking_model.name,
-        AutoEvalColumnQA.average.name
-    ]
+def select_columns(df: pd.DataFrame, domain_query: list, language_query: list, task: str="qa") -> pd.DataFrame:
+    if task == "qa":
+        always_here_cols = [
+            AutoEvalColumnQA.retrieval_model.name,
+            AutoEvalColumnQA.reranking_model.name,
+            AutoEvalColumnQA.average.name
+        ]
+        cols = list(frozenset(COLS_QA).intersection(frozenset(BENCHMARK_COLS_QA)))
+    elif task == "long_doc":
+        always_here_cols = [
+            AutoEvalColumnLongDoc.retrieval_model.name,
+            AutoEvalColumnLongDoc.reranking_model.name,
+            AutoEvalColumnLongDoc.average.name
+        ]
+        cols = list(frozenset(COLS_LONG_DOC).intersection(frozenset(BENCHMARK_COLS_LONG_DOC)))
     selected_cols = []
-    for c in COLS:
+    for c in cols:
         if c not in df.columns:
             continue
-        if c not in BENCHMARK_COLS_QA:
-            continue
-        eval_col = BenchmarksQA[c].value
+        if task == "qa":
+            eval_col = BenchmarksQA[c].value
+        elif task == "long_doc":
+            eval_col = BenchmarksLongDoc[c].value
         if eval_col.domain not in domain_query:
             continue
         if eval_col.lang not in language_query:
@@ -58,7 +67,7 @@ def select_columns(df: pd.DataFrame, domain_query: list, language_query: list) -
         selected_cols.append(c)
     # We use COLS to maintain sorting
     filtered_df = df[always_here_cols + selected_cols]
-    filtered_df[AutoEvalColumnQA.average.name] = filtered_df[selected_cols].mean(axis=1).round(decimals=2)
+    filtered_df[always_here_cols[2]] = filtered_df[selected_cols].mean(axis=1).round(decimals=2)
     return filtered_df
 
 
@@ -75,20 +84,43 @@ def update_table(
     return df
 
 
+def update_table_long_doc(
+        hidden_df: pd.DataFrame,
+        domains: list,
+        langs: list,
+        reranking_query: list,
+        query: str,
+):
+    filtered_df = filter_models(hidden_df, reranking_query)
+    filtered_df = filter_queries(query, filtered_df)
+    df = select_columns(filtered_df, domains, langs, task='long_doc')
+    return df
+
+
 def update_metric(
         raw_data: List[FullEvalResult],
+        task: str,
         metric: str,
         domains: list,
         langs: list,
         reranking_model: list,
         query: str,
 ) -> pd.DataFrame:
-    leaderboard_df = get_leaderboard_df(raw_data, COLS, QA_BENCHMARK_COLS, task='qa', metric=metric)
-    hidden_df = leaderboard_df
-    return update_table(
-        hidden_df,
-        domains,
-        langs,
-        reranking_model,
-        query
-    )
+    if task == 'qa':
+        leaderboard_df = get_leaderboard_df(raw_data, COLS_QA, QA_BENCHMARK_COLS, task=task, metric=metric)
+        return update_table(
+            leaderboard_df,
+            domains,
+            langs,
+            reranking_model,
+            query
+        )
+    elif task == 'long_doc':
+        leaderboard_df = get_leaderboard_df(raw_data, COLS_LONG_DOC, LONG_DOC_BENCHMARK_COLS, task=task, metric=metric)
+        return update_table_long_doc(
+            leaderboard_df,
+            domains,
+            langs,
+            reranking_model,
+            query
+        )
