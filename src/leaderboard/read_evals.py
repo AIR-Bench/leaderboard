@@ -68,7 +68,7 @@ class FullEvalResult:
             config = item.get("config", {})
             # eval results for different metrics
             results = item.get("results", [])
-            retrieval_model_link=config["retreival_model_link"]
+            retrieval_model_link=config["retrieval_model_link"]
             if config["reranking_model_link"] is not None:
                 reranking_model_link=""
             eval_result = EvalResult(
@@ -180,9 +180,9 @@ def get_leaderboard_df(raw_data: List[FullEvalResult], task: str, metric: str) -
     # calculate the average score for selected benchmarks
     _benchmark_cols = frozenset(benchmark_cols).intersection(frozenset(df.columns.to_list()))
     df[COL_NAME_AVG] = df[list(_benchmark_cols)].mean(axis=1).round(decimals=2)
-    df = df.sort_values(by=[COL_NAME_AVG], ascending=False)
-    df.reset_index(inplace=True)
-    df[COL_NAME_RANK] = df[COL_NAME_AVG].rank(ascending=False, method="dense")
+    df.sort_values(by=[COL_NAME_AVG], ascending=False, inplace=True)
+    df.reset_index(inplace=True, drop=True)
+    df[COL_NAME_RANK] = df[COL_NAME_AVG].rank(ascending=False, method="min")
 
     _cols = frozenset(cols).intersection(frozenset(df.columns.to_list()))
     df = df[_cols].round(decimals=2)
