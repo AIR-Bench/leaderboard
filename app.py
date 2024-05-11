@@ -27,12 +27,12 @@ try:
 except Exception:
     restart_space()
 
-raw_data = get_raw_eval_results(EVAL_RESULTS_PATH)
+raw_data = get_raw_eval_results(f"{EVAL_RESULTS_PATH}/AIR-Bench_24.04")
 
 original_df_qa = get_leaderboard_df(
     raw_data, task='qa', metric='ndcg_at_3')
 original_df_long_doc = get_leaderboard_df(
-    raw_data, task='long_doc', metric='ndcg_at_3')
+    raw_data, task='long-doc', metric='ndcg_at_3')
 print(f'raw data: {len(raw_data)}')
 print(f'QA data loaded: {original_df_qa.shape}')
 print(f'Long-Doc data loaded: {len(original_df_long_doc)}')
@@ -42,7 +42,7 @@ shown_columns_qa = get_default_cols('qa', leaderboard_df_qa.columns, add_fix_col
 leaderboard_df_qa = leaderboard_df_qa[shown_columns_qa]
 
 leaderboard_df_long_doc = original_df_long_doc.copy()
-shown_columns_long_doc = get_default_cols('long_doc', leaderboard_df_long_doc.columns, add_fix_cols=True)
+shown_columns_long_doc = get_default_cols('long-doc', leaderboard_df_long_doc.columns, add_fix_cols=True)
 leaderboard_df_long_doc = leaderboard_df_long_doc[shown_columns_long_doc]
 
 
@@ -62,7 +62,7 @@ def update_metric_long_doc(
         reranking_model: list,
         query: str,
 ):
-    return update_metric(raw_data, 'long_doc', metric, domains, langs, reranking_model, query)
+    return update_metric(raw_data, "long-doc", metric, domains, langs, reranking_model, query)
 
 
 demo = gr.Blocks(css=custom_css)

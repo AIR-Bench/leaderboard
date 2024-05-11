@@ -12,6 +12,8 @@ from src.display.formatting import has_no_nan_values
 from src.display.utils import (
     COL_NAME_RERANKING_MODEL,
     COL_NAME_RETRIEVAL_MODEL,
+    COL_NAME_RERANKING_MODEL_LINK,
+    COL_NAME_RETRIEVAL_MODEL_LINK,
     COLS_QA,
     QA_BENCHMARK_COLS,
     COLS_LONG_DOC,
@@ -44,6 +46,8 @@ class FullEvalResult:
     eval_name: str  # name of the evaluation, [retrieval_model]_[reranking_model]
     retrieval_model: str
     reranking_model: str
+    retrieval_model_link: str
+    reranking_model_link: str
     results: List[EvalResult]  # results on all the EvalResults over different tasks and metrics.
     date: str = ""
 
@@ -58,10 +62,15 @@ class FullEvalResult:
 
         # store all the results for different metrics and tasks
         result_list = []
+        retrieval_model_link = ""
+        reranking_model_link = ""
         for item in model_data:
             config = item.get("config", {})
             # eval results for different metrics
             results = item.get("results", [])
+            retrieval_model_link=config["retreival_model_link"]
+            if config["reranking_model_link"] is not None:
+                reranking_model_link=""
             eval_result = EvalResult(
                 eval_name=f"{config['retrieval_model']}_{config['reranking_model']}_{config['metric']}",
                 retrieval_model=config["retrieval_model"],
@@ -75,6 +84,8 @@ class FullEvalResult:
             eval_name=f"{result_list[0].retrieval_model}_{result_list[0].reranking_model}",
             retrieval_model=result_list[0].retrieval_model,
             reranking_model=result_list[0].reranking_model,
+            retrieval_model_link=retrieval_model_link,
+            reranking_model_link=reranking_model_link,
             results=result_list
         )
 
@@ -91,6 +102,8 @@ class FullEvalResult:
             results[eval_result.eval_name]["eval_name"] = eval_result.eval_name
             results[eval_result.eval_name][COL_NAME_RETRIEVAL_MODEL] = self.retrieval_model
             results[eval_result.eval_name][COL_NAME_RERANKING_MODEL] = self.reranking_model
+            results[eval_result.eval_name][COL_NAME_RETRIEVAL_MODEL_LINK] = self.retrieval_model_link
+            results[eval_result.eval_name][COL_NAME_RERANKING_MODEL_LINK] = self.reranking_model_link
 
             # print(f'result loaded: {eval_result.eval_name}')
             for result in eval_result.results:
@@ -99,9 +112,9 @@ class FullEvalResult:
                 lang = result["lang"]
                 dataset = result["dataset"]
                 value = result["value"]
-                if task == 'qa':
+                if dataset == 'default':
                     benchmark_name = f"{domain}_{lang}"
-                elif task == 'long_doc':
+                else:
                     benchmark_name = f"{domain}_{lang}_{dataset}"
                 results[eval_result.eval_name][get_safe_name(benchmark_name)] = value
         return [v for v in results.values()]
@@ -115,13 +128,12 @@ def get_raw_eval_results(results_path: str) -> List[FullEvalResult]:
     for root, dirs, files in os.walk(results_path):
         if len(files) == 0:
             continue
-        try:
-            files.sort(key=lambda x: x.removesuffix(".json").removeprefix("results_")[:-7], reverse=True)
-        except dateutil.parser._parser.ParserError:
-            files = [files[-1]]
 
         # select the latest results
         for file in files:
+            if file != "results.json":
+                print(f'skip {file}')
+                continue
             model_result_filepaths.append(os.path.join(root, file))
 
     eval_results = {}
@@ -154,7 +166,7 @@ def get_leaderboard_df(raw_data: List[FullEvalResult], task: str, metric: str) -
     if task == "qa":
         cols = COLS_QA
         benchmark_cols = QA_BENCHMARK_COLS
-    elif task == "long_doc":
+    elif task == "long-doc":
         cols = COLS_LONG_DOC
         benchmark_cols = LONG_DOC_BENCHMARK_COLS
     else:

@@ -22,6 +22,8 @@ class ColumnContent:
 COL_NAME_AVG = "Average ⬆️"
 COL_NAME_RETRIEVAL_MODEL = "Retrieval Model"
 COL_NAME_RERANKING_MODEL = "Reranking Model"
+COL_NAME_RETRIEVAL_MODEL_LINK = "Retrieval Model LINK"
+COL_NAME_RERANKING_MODEL_LINK = "Reranking Model LINK"
 COL_NAME_RANK = "Rank 🏆"
 
 def make_autoevalcolumn(cls_name="BenchmarksQA", benchmarks=BenchmarksQA):
@@ -33,6 +35,12 @@ def make_autoevalcolumn(cls_name="BenchmarksQA", benchmarks=BenchmarksQA):
     )
     auto_eval_column_dict.append(
         ["reranking_model", ColumnContent, ColumnContent(COL_NAME_RERANKING_MODEL, "markdown", True, never_hidden=True)]
+    )
+    auto_eval_column_dict.append(
+        ["retrieval_model_link", ColumnContent, ColumnContent(COL_NAME_RETRIEVAL_MODEL, "markdown", False, hidden=True, never_hidden=False)]
+    )
+    auto_eval_column_dict.append(
+        ["reranking_model_link", ColumnContent, ColumnContent(COL_NAME_RERANKING_MODEL, "markdown", False, hidden=True, never_hidden=False)]
     )
     auto_eval_column_dict.append(
         ["average", ColumnContent, ColumnContent(COL_NAME_AVG, "number", True)]

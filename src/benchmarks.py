@@ -40,7 +40,7 @@ dataset_dict = {
         "arxiv": {
             "en": ["Arxiv", ]},
     },
-    "long_doc": {
+    "long-doc": {
         "arxiv": {
             "en": ["gpt-3", "llama2", "llm-survey", "gemini"],
         },
@@ -125,7 +125,7 @@ for task, domain_dict in dataset_dict.items():
                 col_name = benchmark_name
                 for metric in dataset_list:
                     qa_benchmark_dict[benchmark_name] = Benchmark(benchmark_name, metric, col_name, domain, lang, task)
-            elif task == "long_doc":
+            elif task == "long-doc":
                 for dataset in dataset_list:
                     benchmark_name = f"{domain}_{lang}_{dataset}"
                     benchmark_name = get_safe_name(benchmark_name)

@@ -47,7 +47,7 @@ def search_table(df: pd.DataFrame, query: str) -> pd.DataFrame:
 def get_default_cols(task: str, columns: list, add_fix_cols: bool=True) -> list:
     if task == "qa":
         cols = list(frozenset(COLS_QA).intersection(frozenset(BENCHMARK_COLS_QA)).intersection(frozenset(columns)))
-    elif task == "long_doc":
+    elif task == "long-doc":
         cols = list(frozenset(COLS_LONG_DOC).intersection(frozenset(BENCHMARK_COLS_LONG_DOC)).intersection(frozenset(columns)))
     else:
         raise NotImplemented
@@ -68,7 +68,7 @@ def select_columns(df: pd.DataFrame, domain_query: list, language_query: list, t
     for c in cols:
         if task == "qa":
             eval_col = BenchmarksQA[c].value
-        elif task == "long_doc":
+        elif task == "long-doc":
             eval_col = BenchmarksLongDoc[c].value
         if eval_col.domain not in domain_query:
             continue
@@ -127,7 +127,7 @@ def update_metric(
             reranking_model,
             query
         )
-    elif task == 'long_doc':
+    elif task == "long-doc":
         leaderboard_df = get_leaderboard_df(raw_data, task=task, metric=metric)
         return update_table_long_doc(
             leaderboard_df,
