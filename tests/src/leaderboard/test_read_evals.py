@@ -41,7 +41,7 @@ def test_get_raw_eval_results():
 def test_get_leaderboard_df():
     results_path = cur_fp.parents[2] / "toydata" / "eval_results" / "AIR-Bench_24.04"
     raw_data = get_raw_eval_results(results_path)
-    df = get_leaderboard_df(raw_data, 'qa', 'ndcg_at_3')
+    df = get_leaderboard_df(raw_data, 'qa', 'ndcg_at_10')
     assert df.shape[0] == 4
     # the results contain only one embedding model
     # for i in range(4):

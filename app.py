@@ -31,9 +31,9 @@ except Exception:
 raw_data = get_raw_eval_results(f"{EVAL_RESULTS_PATH}/AIR-Bench_24.04")
 
 original_df_qa = get_leaderboard_df(
-    raw_data, task='qa', metric='ndcg_at_3')
+    raw_data, task='qa', metric='ndcg_at_10')
 original_df_long_doc = get_leaderboard_df(
-    raw_data, task='long-doc', metric='ndcg_at_3')
+    raw_data, task='long-doc', metric='ndcg_at_10')
 print(f'raw data: {len(raw_data)}')
 print(f'QA data loaded: {original_df_qa.shape}')
 print(f'Long-Doc data loaded: {len(original_df_long_doc)}')
