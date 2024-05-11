@@ -1,10 +1,17 @@
+import json
 from typing import List
+import os
+from datetime import datetime
+from pathlib import Path
+
+import pytz
 
 import pandas as pd
 
 from src.benchmarks import BENCHMARK_COLS_QA, BENCHMARK_COLS_LONG_DOC, BenchmarksQA, BenchmarksLongDoc
 from src.display.utils import AutoEvalColumnQA, AutoEvalColumnLongDoc, COLS_QA, COLS_LONG_DOC, COL_NAME_RANK, COL_NAME_AVG, COL_NAME_RERANKING_MODEL, COL_NAME_RETRIEVAL_MODEL
 from src.leaderboard.read_evals import FullEvalResult, get_leaderboard_df
+from src.envs import API, SEARCH_RESULTS_REPO, CACHE_PATH
 
 
 def filter_models(df: pd.DataFrame, reranking_query: list) -> pd.DataFrame:
@@ -131,12 +138,40 @@ def update_metric(
         )
 
 
-def upload_file(files):
-    file_paths = [file.name for file in files]
-    print(f"file uploaded: {file_paths}")
-    # for fp in file_paths:
-    #     # upload the file
-    #     print(file_paths)
-    #     HfApi(token="").upload_file(...)
-    #     os.remove(fp)
-    return file_paths
+def upload_file(
+        filepath: str, model: str, model_url: str, version: str="AIR-Bench_24.04"):
+    print(f"file uploaded: {filepath}")
+    # model = "bge-small-en-v1.5"
+    # version = "AIR-Bench_24.04"
+    if not filepath.endswith(".zip"):
+        print(f"file uploading aborted. wrong file type: {filepath}")
+        return filepath
+
+    # rename the uploaded file
+    input_fp = Path(filepath)
+    timezone = pytz.timezone('UTC')
+    timestamp = datetime.now(timezone).strftime('%Y%m%d%H%M%S')
+    output_fn = f"{timestamp}-{input_fp.name}"
+    input_folder_path = input_fp.parent
+    API.upload_file(
+        path_or_fileobj=filepath,
+        path_in_repo=f"{version}/{model}/{output_fn}",
+        repo_id=SEARCH_RESULTS_REPO,
+        repo_type="dataset",
+        commit_message=f"feat: submit {model} to evaluate")
+
+    output_config_fn = f"{output_fn.removesuffix('.zip')}.json"
+    output_config = {
+        "model_name": f"{model}",
+        "model_url": f"{model_url}",
+        "version": f"{version}"
+    }
+    with open(input_folder_path / output_config_fn, "w") as f:
+        json.dump(output_config, f, ensure_ascii=False)
+    API.upload_file(
+        path_or_fileobj=input_folder_path / output_config_fn,
+        path_in_repo= f"{version}/{model}/{output_config_fn}",
+        repo_id=SEARCH_RESULTS_REPO,
+        repo_type="dataset",
+        commit_message=f"feat: submit {model} config")
+    return filepath
