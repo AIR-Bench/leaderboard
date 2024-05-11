@@ -141,21 +141,16 @@ def update_metric(
         )
 
 
-def upload_file(
-        filepath: str, model: str, model_url: str, version: str="AIR-Bench_24.04"):
-    print(f"file uploaded: {filepath}")
-    # model = "bge-small-en-v1.5"
-    # version = "AIR-Bench_24.04"
+def upload_file(filepath: str):
     if not filepath.endswith(".zip"):
         print(f"file uploading aborted. wrong file type: {filepath}")
         return filepath
-
     return filepath
 
 from huggingface_hub import ModelCard
 from huggingface_hub.utils import EntryNotFoundError
 
-def submit_results(filepath: str, model: str, model_url: str, version: str="AIR-Bench_24.04"):
+def submit_results(filepath: str, model: str, model_url: str, version: str="AIR-Bench_24.04", anonymous=False):
     if not filepath.endswith(".zip"):
         return styled_error(f"file uploading aborted. wrong file type: {filepath}")
 
@@ -194,6 +189,7 @@ def submit_results(filepath: str, model: str, model_url: str, version: str="AIR-
         "model_name": f"{model}",
         "model_url": f"{model_url}",
         "version": f"{version}",
+        "anonymous": f"{anonymous}",
         "revision": f"{revision}",
         "timestamp": f"{timestamp}"
     }

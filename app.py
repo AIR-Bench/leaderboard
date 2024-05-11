@@ -307,9 +307,14 @@ with demo:
                     with gr.Column():
                         model_url = gr.Textbox(label="Model URL")
                 with gr.Row():
-                    upload_button = gr.UploadButton("Upload search results", file_count="single")
+                    upload_button = gr.UploadButton("Click to upload search results", file_count="single")
                 with gr.Row():
                     file_output = gr.File()
+                with gr.Row():
+                    submit_anonymous = gr.Checkbox(
+                        label="Nope. I want to submit anonymously 🥷",
+                        value=False,
+                        info="Do you want to shown on the leaderboard by default?")
                 with gr.Row():
                     submit_button = gr.Button("Submit")
                 with gr.Row():
@@ -318,9 +323,6 @@ with demo:
                     upload_file,
                     [
                         upload_button,
-                        model_name,
-                        model_url,
-                        benchmark_version,
                     ],
                     file_output)
                 submit_button.click(
@@ -328,7 +330,9 @@ with demo:
                     [
                         file_output,
                         model_name,
-                        model_url
+                        model_url,
+                        benchmark_version,
+                        submit_anonymous
                     ],
                     submission_result,
                     show_progress="hidden"
