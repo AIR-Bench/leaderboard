@@ -19,14 +19,13 @@ from src.benchmarks import DOMAIN_COLS_QA, LANG_COLS_QA, DOMAIN_COLS_LONG_DOC, L
 def restart_space():
     API.restart_space(repo_id=REPO_ID)
 
-# try:
-#     print(EVAL_RESULTS_PATH)
-#     snapshot_download(
-#         repo_id=RESULTS_REPO, local_dir=EVAL_RESULTS_PATH, repo_type="dataset", tqdm_class=None, etag_timeout=30,
-#         token=TOKEN
-#     )
-# except Exception:
-#     restart_space()
+try:
+    snapshot_download(
+        repo_id=RESULTS_REPO, local_dir=EVAL_RESULTS_PATH, repo_type="dataset", tqdm_class=None, etag_timeout=30,
+        token=TOKEN
+    )
+except Exception:
+    restart_space()
 
 raw_data = get_raw_eval_results(EVAL_RESULTS_PATH)
 
