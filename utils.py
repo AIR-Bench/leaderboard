@@ -12,6 +12,7 @@ from src.benchmarks import BENCHMARK_COLS_QA, BENCHMARK_COLS_LONG_DOC, Benchmark
 from src.display.utils import AutoEvalColumnQA, AutoEvalColumnLongDoc, COLS_QA, COLS_LONG_DOC, COL_NAME_RANK, COL_NAME_AVG, COL_NAME_RERANKING_MODEL, COL_NAME_RETRIEVAL_MODEL
 from src.leaderboard.read_evals import FullEvalResult, get_leaderboard_df
 from src.envs import API, SEARCH_RESULTS_REPO, CACHE_PATH
+from src.display.formatting import styled_message, styled_error
 
 
 def filter_models(df: pd.DataFrame, reranking_query: list) -> pd.DataFrame:
@@ -149,8 +150,34 @@ def upload_file(
         print(f"file uploading aborted. wrong file type: {filepath}")
         return filepath
 
+    return filepath
+
+from huggingface_hub import ModelCard
+from huggingface_hub.utils import EntryNotFoundError
+
+def submit_results(filepath: str, model: str, model_url: str, version: str="AIR-Bench_24.04"):
+    if not filepath.endswith(".zip"):
+        return styled_error(f"file uploading aborted. wrong file type: {filepath}")
+
+    # validate model
+    if not model:
+        return styled_error("failed to submit. Model name can not be empty.")
+
+    # validate model url
+    if not model_url.startswith("https://huggingface.co/"):
+        return styled_error(f"failed to submit. Model url must be a link to a valid HuggingFace model on HuggingFace space. Illegal model url: {model_url}")
+
+    # validate model card
+    repo_id=model_url.removeprefix("https://huggingface.co/")
+    try:
+        card = ModelCard.load(repo_id)
+    except EntryNotFoundError as e:
+        print(e)
+        return styled_error(f"failed to submit. Model url must be a link to a valid HuggingFace model on HuggingFace space. Could not get model {repo_id}")
+
     # rename the uploaded file
     input_fp = Path(filepath)
+    revision = input_fp.name.removesuffix(".zip")
     timezone = pytz.timezone('UTC')
     timestamp = datetime.now(timezone).strftime('%Y%m%d%H%M%S')
     output_fn = f"{timestamp}-{input_fp.name}"
@@ -166,7 +193,9 @@ def upload_file(
     output_config = {
         "model_name": f"{model}",
         "model_url": f"{model_url}",
-        "version": f"{version}"
+        "version": f"{version}",
+        "revision": f"{revision}",
+        "timestamp": f"{timestamp}"
     }
     with open(input_folder_path / output_config_fn, "w") as f:
         json.dump(output_config, f, ensure_ascii=False)
@@ -176,4 +205,6 @@ def upload_file(
         repo_id=SEARCH_RESULTS_REPO,
         repo_type="dataset",
         commit_message=f"feat: submit {model} config")
-    return filepath
+    return styled_message(
+        f"Thanks for submission!\nSubmission revision: {revision}"
+    )

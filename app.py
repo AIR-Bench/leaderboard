@@ -12,7 +12,7 @@ from src.display.css_html_js import custom_css
 from src.leaderboard.read_evals import get_raw_eval_results, get_leaderboard_df
 
 from src.envs import API, EVAL_RESULTS_PATH, REPO_ID, RESULTS_REPO, TOKEN
-from utils import update_table, update_metric, update_table_long_doc, upload_file, get_default_cols
+from utils import update_table, update_metric, update_table_long_doc, upload_file, get_default_cols, submit_results
 from src.benchmarks import DOMAIN_COLS_QA, LANG_COLS_QA, DOMAIN_COLS_LONG_DOC, LANG_COLS_LONG_DOC, metric_list
 from src.display.utils import TYPES_QA, TYPES_LONG_DOC
 
@@ -307,9 +307,13 @@ with demo:
                     with gr.Column():
                         model_url = gr.Textbox(label="Model URL")
                 with gr.Row():
+                    upload_button = gr.UploadButton("Upload search results", file_count="single")
+                with gr.Row():
                     file_output = gr.File()
                 with gr.Row():
-                    upload_button = gr.UploadButton("Click to submit evaluation", file_count="single")
+                    submit_button = gr.Button("Submit")
+                with gr.Row():
+                    submission_result = gr.Markdown()
                 upload_button.upload(
                     upload_file,
                     [
@@ -319,6 +323,16 @@ with demo:
                         benchmark_version,
                     ],
                     file_output)
+                submit_button.click(
+                    submit_results,
+                    [
+                        file_output,
+                        model_name,
+                        model_url
+                    ],
+                    submission_result,
+                    show_progress="hidden"
+                )
 
         with gr.TabItem("📝 About", elem_id="llm-benchmark-tab-table", id=3):
             gr.Markdown(BENCHMARKS_TEXT, elem_classes="markdown-text")
