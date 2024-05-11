@@ -14,6 +14,7 @@ from src.leaderboard.read_evals import get_raw_eval_results, get_leaderboard_df
 from src.envs import API, EVAL_RESULTS_PATH, REPO_ID, RESULTS_REPO, TOKEN
 from utils import update_table, update_metric, update_table_long_doc, upload_file, get_default_cols
 from src.benchmarks import DOMAIN_COLS_QA, LANG_COLS_QA, DOMAIN_COLS_LONG_DOC, LANG_COLS_LONG_DOC, metric_list
+from src.display.utils import TYPES_QA, TYPES_LONG_DOC
 
 
 def restart_space():
@@ -122,6 +123,7 @@ with demo:
 
             leaderboard_table = gr.components.Dataframe(
                 value=leaderboard_df_qa,
+                datatype=TYPES_QA,
                 elem_id="leaderboard-table",
                 interactive=False,
                 visible=True,
@@ -130,6 +132,7 @@ with demo:
             # Dummy leaderboard for handling the case when the user uses backspace key
             hidden_leaderboard_table_for_search = gr.components.Dataframe(
                 value=leaderboard_df_qa,
+                datatype=TYPES_QA,
                 # headers=COLS,
                 # datatype=TYPES,
                 visible=False,
@@ -229,6 +232,7 @@ with demo:
 
             leaderboard_table_long_doc = gr.components.Dataframe(
                 value=leaderboard_df_long_doc,
+                datatype=TYPES_LONG_DOC,
                 elem_id="leaderboard-table-long-doc",
                 interactive=False,
                 visible=True,
@@ -237,6 +241,7 @@ with demo:
             # Dummy leaderboard for handling the case when the user uses backspace key
             hidden_leaderboard_table_for_search = gr.components.Dataframe(
                 value=leaderboard_df_long_doc,
+                datatype=TYPES_LONG_DOC,
                 visible=False,
             )
 

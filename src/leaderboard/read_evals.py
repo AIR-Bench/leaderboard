@@ -4,7 +4,6 @@ from collections import defaultdict
 from dataclasses import dataclass
 from typing import List
 
-import dateutil.parser._parser
 import pandas as pd
 
 from src.benchmarks import get_safe_name
@@ -21,6 +20,8 @@ from src.display.utils import (
     COL_NAME_AVG,
     COL_NAME_RANK
 )
+
+from src.display.formatting import make_clickable_model
 
 
 @dataclass
@@ -100,8 +101,10 @@ class FullEvalResult:
             if eval_result.task != task:
                 continue
             results[eval_result.eval_name]["eval_name"] = eval_result.eval_name
-            results[eval_result.eval_name][COL_NAME_RETRIEVAL_MODEL] = self.retrieval_model
-            results[eval_result.eval_name][COL_NAME_RERANKING_MODEL] = self.reranking_model
+            results[eval_result.eval_name][COL_NAME_RETRIEVAL_MODEL] = (
+                make_clickable_model(self.retrieval_model, self.retrieval_model_link))
+            results[eval_result.eval_name][COL_NAME_RERANKING_MODEL] = (
+                make_clickable_model(self.reranking_model, self.reranking_model_link))
             results[eval_result.eval_name][COL_NAME_RETRIEVAL_MODEL_LINK] = self.retrieval_model_link
             results[eval_result.eval_name][COL_NAME_RERANKING_MODEL_LINK] = self.reranking_model_link
 
@@ -177,16 +180,17 @@ def get_leaderboard_df(raw_data: List[FullEvalResult], task: str, metric: str) -
     df = pd.DataFrame.from_records(all_data_json)
     print(f'dataframe created: {df.shape}')
 
-    # calculate the average score for selected benchmarks
     _benchmark_cols = frozenset(benchmark_cols).intersection(frozenset(df.columns.to_list()))
+
+    # calculate the average score for selected benchmarks
     df[COL_NAME_AVG] = df[list(_benchmark_cols)].mean(axis=1).round(decimals=2)
     df.sort_values(by=[COL_NAME_AVG], ascending=False, inplace=True)
     df.reset_index(inplace=True, drop=True)
-    df[COL_NAME_RANK] = df[COL_NAME_AVG].rank(ascending=False, method="min")
 
     _cols = frozenset(cols).intersection(frozenset(df.columns.to_list()))
     df = df[_cols].round(decimals=2)
 
     # filter out if any of the benchmarks have not been produced
     df = df[has_no_nan_values(df, _benchmark_cols)]
+    df[COL_NAME_RANK] = df[COL_NAME_AVG].rank(ascending=False, method="min")
     return df
