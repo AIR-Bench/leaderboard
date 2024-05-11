@@ -66,7 +66,8 @@ AutoEvalColumnLongDoc = make_autoevalcolumn(
 # Column selection
 COLS_QA = [c.name for c in fields(AutoEvalColumnQA) if not c.hidden]
 COLS_LONG_DOC = [c.name for c in fields(AutoEvalColumnLongDoc) if not c.hidden]
-TYPES = [c.type for c in fields(AutoEvalColumnQA) if not c.hidden]
+TYPES_QA = [c.type for c in fields(AutoEvalColumnQA) if not c.hidden]
+TYPES_LONG_DOC = [c.type for c in fields(AutoEvalColumnLongDoc) if not c.hidden]
 COLS_LITE = [c.name for c in fields(AutoEvalColumnQA) if c.displayed_by_default and not c.hidden]
 
 QA_BENCHMARK_COLS = [t.value.col_name for t in BenchmarksQA]
