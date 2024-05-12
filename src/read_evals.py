@@ -15,6 +15,7 @@ from src.display.utils import (
     COL_NAME_RETRIEVAL_MODEL_LINK,
     COL_NAME_REVISION,
     COL_NAME_TIMESTAMP,
+    COL_NAME_IS_ANONYMOUS,
     COLS_QA,
     QA_BENCHMARK_COLS,
     COLS_LONG_DOC,
@@ -90,7 +91,7 @@ class FullEvalResult:
                 metric=config["metric"],
                 timestamp=config.get("timestamp", "2024-05-12T12:24:02Z"),
                 revision=config.get("revision", "3a2ba9dcad796a48a02ca1147557724e"),
-                is_anonymous=config.get("is_anonymous", False)
+                is_anonymous=config.get("is_anonymous", True)
             )
             result_list.append(eval_result)
         return cls(
@@ -124,6 +125,7 @@ class FullEvalResult:
             results[eval_result.eval_name][COL_NAME_RERANKING_MODEL_LINK] = self.reranking_model_link
             results[eval_result.eval_name][COL_NAME_REVISION] = self.revision
             results[eval_result.eval_name][COL_NAME_TIMESTAMP] = self.timestamp
+            results[eval_result.eval_name][COL_NAME_IS_ANONYMOUS] = self.is_anonymous
 
             # print(f'result loaded: {eval_result.eval_name}')
             for result in eval_result.results:
@@ -183,11 +185,12 @@ def get_leaderboard_df(raw_data: List[FullEvalResult], task: str, metric: str) -
     """
     Creates a dataframe from all the individual experiment results
     """
+    cols = [COL_NAME_IS_ANONYMOUS, ]
     if task == "qa":
-        cols = COLS_QA
+        cols += COLS_QA
         benchmark_cols = QA_BENCHMARK_COLS
     elif task == "long-doc":
-        cols = COLS_LONG_DOC
+        cols += COLS_LONG_DOC
         benchmark_cols = LONG_DOC_BENCHMARK_COLS
     else:
         raise NotImplemented
@@ -195,7 +198,7 @@ def get_leaderboard_df(raw_data: List[FullEvalResult], task: str, metric: str) -
     for v in raw_data:
         all_data_json += v.to_dict(task=task, metric=metric)
     df = pd.DataFrame.from_records(all_data_json)
-    print(f'dataframe created: {df.shape}')
+    # print(f'dataframe created: {df.shape}')
 
     _benchmark_cols = frozenset(benchmark_cols).intersection(frozenset(df.columns.to_list()))
 

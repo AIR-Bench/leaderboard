@@ -8,7 +8,7 @@ import pandas as pd
 from src.benchmarks import BENCHMARK_COLS_QA, BENCHMARK_COLS_LONG_DOC, BenchmarksQA, BenchmarksLongDoc
 from src.display.formatting import styled_message, styled_error
 from src.display.utils import COLS_QA, TYPES_QA, COLS_LONG_DOC, TYPES_LONG_DOC, COL_NAME_RANK, COL_NAME_AVG, \
-    COL_NAME_RERANKING_MODEL, COL_NAME_RETRIEVAL_MODEL, get_default_auto_eval_column_dict
+    COL_NAME_RERANKING_MODEL, COL_NAME_RETRIEVAL_MODEL, COL_NAME_IS_ANONYMOUS, get_default_auto_eval_column_dict
 from src.envs import API, SEARCH_RESULTS_REPO
 from src.read_evals import FullEvalResult, get_leaderboard_df
 
@@ -77,7 +77,7 @@ FIXED_COLS_TYPES = [c.type for _, _, c in fixed_cols]
 
 
 def select_columns(df: pd.DataFrame, domain_query: list, language_query: list, task: str = "qa") -> pd.DataFrame:
-    cols = get_default_cols(task=task, columns=df.columns, add_fix_cols=False)
+    cols, _ = get_default_cols(task=task, columns=df.columns, add_fix_cols=False)
     selected_cols = []
     for c in cols:
         if task == "qa":
@@ -91,7 +91,7 @@ def select_columns(df: pd.DataFrame, domain_query: list, language_query: list, t
         selected_cols.append(c)
     # We use COLS to maintain sorting
     filtered_df = df[FIXED_COLS + selected_cols]
-    filtered_df[COL_NAME_AVG] = filtered_df[selected_cols].mean(axis=1).round(decimals=2)
+    filtered_df[COL_NAME_AVG] = filtered_df[selected_cols].mean(axis=1, numeric_only=True).round(decimals=2)
     filtered_df.sort_values(by=[COL_NAME_AVG], ascending=False, inplace=True)
     filtered_df.reset_index(inplace=True, drop=True)
     filtered_df[COL_NAME_RANK] = filtered_df[COL_NAME_AVG].rank(ascending=False, method="min")
@@ -105,8 +105,15 @@ def update_table(
         langs: list,
         reranking_query: list,
         query: str,
+        show_anonymous: bool
 ):
-    filtered_df = filter_models(hidden_df, reranking_query)
+    print(f"shown_anonymous: {show_anonymous}")
+    filtered_df = hidden_df
+    if not show_anonymous:
+        print(filtered_df[COL_NAME_IS_ANONYMOUS])
+        filtered_df = filtered_df[~filtered_df[COL_NAME_IS_ANONYMOUS]]
+        print(f"filtered_df: {len(filtered_df)}")
+    filtered_df = filter_models(filtered_df, reranking_query)
     filtered_df = filter_queries(query, filtered_df)
     df = select_columns(filtered_df, domains, langs)
     return df
@@ -118,10 +125,13 @@ def update_table_long_doc(
         langs: list,
         reranking_query: list,
         query: str,
+        # show_anonymous: bool
 ):
     filtered_df = filter_models(hidden_df, reranking_query)
     filtered_df = filter_queries(query, filtered_df)
     df = select_columns(filtered_df, domains, langs, task='long_doc')
+    # if not show_anonymous:
+    #     df = df[~df[COL_NAME_IS_ANONYMOUS]]
     return df
 
 
@@ -133,6 +143,7 @@ def update_metric(
         langs: list,
         reranking_model: list,
         query: str,
+        show_anonymous: bool
 ) -> pd.DataFrame:
     if task == 'qa':
         leaderboard_df = get_leaderboard_df(raw_data, task=task, metric=metric)
@@ -141,7 +152,8 @@ def update_metric(
             domains,
             langs,
             reranking_model,
-            query
+            query,
+            show_anonymous
         )
     elif task == "long-doc":
         leaderboard_df = get_leaderboard_df(raw_data, task=task, metric=metric)
@@ -150,7 +162,8 @@ def update_metric(
             domains,
             langs,
             reranking_model,
-            query
+            query,
+            # show_anonymous
         )
 
 

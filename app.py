@@ -11,6 +11,7 @@ from src.about import (
 from src.benchmarks import DOMAIN_COLS_QA, LANG_COLS_QA, DOMAIN_COLS_LONG_DOC, LANG_COLS_LONG_DOC, METRIC_LIST, \
     DEFAULT_METRIC
 from src.display.css_html_js import custom_css
+from src.display.utils import COL_NAME_IS_ANONYMOUS
 from src.envs import API, EVAL_RESULTS_PATH, REPO_ID, RESULTS_REPO, TOKEN
 from src.read_evals import get_raw_eval_results, get_leaderboard_df
 from src.utils import update_table, update_metric, update_table_long_doc, upload_file, get_default_cols, submit_results
@@ -20,13 +21,14 @@ def restart_space():
     API.restart_space(repo_id=REPO_ID)
 
 
-try:
-    snapshot_download(
-        repo_id=RESULTS_REPO, local_dir=EVAL_RESULTS_PATH, repo_type="dataset", tqdm_class=None, etag_timeout=30,
-        token=TOKEN
-    )
-except Exception:
-    restart_space()
+# try:
+#     snapshot_download(
+#         repo_id=RESULTS_REPO, local_dir=EVAL_RESULTS_PATH, repo_type="dataset", tqdm_class=None, etag_timeout=30,
+#         token=TOKEN
+#     )
+# except Exception as e:
+#     print(f'failed to download')
+#     restart_space()
 
 raw_data = get_raw_eval_results(f"{EVAL_RESULTS_PATH}/AIR-Bench_24.04")
 
@@ -40,7 +42,7 @@ print(f'Long-Doc data loaded: {len(original_df_long_doc)}')
 
 leaderboard_df_qa = original_df_qa.copy()
 shown_columns_qa, types_qa = get_default_cols('qa', leaderboard_df_qa.columns, add_fix_cols=True)
-leaderboard_df_qa = leaderboard_df_qa[shown_columns_qa]
+leaderboard_df_qa = leaderboard_df_qa[~leaderboard_df_qa[COL_NAME_IS_ANONYMOUS]][shown_columns_qa]
 
 leaderboard_df_long_doc = original_df_long_doc.copy()
 shown_columns_long_doc, types_long_doc = get_default_cols('long-doc', leaderboard_df_long_doc.columns,
@@ -54,8 +56,9 @@ def update_metric_qa(
         langs: list,
         reranking_model: list,
         query: str,
+        show_anonymous: bool
 ):
-    return update_metric(raw_data, 'qa', metric, domains, langs, reranking_model, query)
+    return update_metric(raw_data, 'qa', metric, domains, langs, reranking_model, query, show_anonymous)
 
 
 def update_metric_long_doc(
@@ -123,6 +126,12 @@ with demo:
                             multiselect=True,
                             interactive=True
                         )
+                    with gr.Row():
+                        show_anonymous = gr.Checkbox(
+                            label="Show anonymous submissions",
+                            value=False,
+                            info="The anonymous submissions might have invalid model information."
+                        )
 
             leaderboard_table = gr.components.Dataframe(
                 value=leaderboard_df_qa,
@@ -134,10 +143,8 @@ with demo:
 
             # Dummy leaderboard for handling the case when the user uses backspace key
             hidden_leaderboard_table_for_search = gr.components.Dataframe(
-                value=leaderboard_df_qa,
+                value=original_df_qa,
                 datatype=types_qa,
-                # headers=COLS,
-                # datatype=TYPES,
                 visible=False,
             )
 
@@ -150,13 +157,14 @@ with demo:
                     selected_langs,
                     selected_rerankings,
                     search_bar,
+                    show_anonymous,
                 ],
                 leaderboard_table,
             )
 
             # Set column-wise listener
             for selector in [
-                selected_domains, selected_langs, selected_rerankings
+                selected_domains, selected_langs, selected_rerankings, show_anonymous
             ]:
                 selector.change(
                     update_table,
@@ -166,6 +174,7 @@ with demo:
                         selected_langs,
                         selected_rerankings,
                         search_bar,
+                        show_anonymous,
                     ],
                     leaderboard_table,
                     queue=True,
@@ -180,6 +189,7 @@ with demo:
                     selected_langs,
                     selected_rerankings,
                     search_bar,
+                    show_anonymous,
                 ],
                 leaderboard_table,
                 queue=True
