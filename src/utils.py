@@ -129,7 +129,7 @@ def update_table_long_doc(
         filtered_df = filtered_df[~filtered_df[COL_NAME_IS_ANONYMOUS]]
     filtered_df = filter_models(filtered_df, reranking_query)
     filtered_df = filter_queries(query, filtered_df)
-    df = select_columns(filtered_df, domains, langs, task='long_doc')
+    df = select_columns(filtered_df, domains, langs, task='long-doc')
     return df
 
 
