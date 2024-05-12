@@ -107,15 +107,12 @@ def update_table(
         query: str,
         show_anonymous: bool
 ):
-    print(f"shown_anonymous: {show_anonymous}")
     filtered_df = hidden_df
     if not show_anonymous:
-        print(filtered_df[COL_NAME_IS_ANONYMOUS])
         filtered_df = filtered_df[~filtered_df[COL_NAME_IS_ANONYMOUS]]
-        print(f"filtered_df: {len(filtered_df)}")
     filtered_df = filter_models(filtered_df, reranking_query)
     filtered_df = filter_queries(query, filtered_df)
-    df = select_columns(filtered_df, domains, langs)
+    df = select_columns(filtered_df, domains, langs, task='qa')
     return df
 
 
@@ -125,13 +122,14 @@ def update_table_long_doc(
         langs: list,
         reranking_query: list,
         query: str,
-        # show_anonymous: bool
+        show_anonymous: bool
 ):
-    filtered_df = filter_models(hidden_df, reranking_query)
+    filtered_df = hidden_df
+    if not show_anonymous:
+        filtered_df = filtered_df[~filtered_df[COL_NAME_IS_ANONYMOUS]]
+    filtered_df = filter_models(filtered_df, reranking_query)
     filtered_df = filter_queries(query, filtered_df)
     df = select_columns(filtered_df, domains, langs, task='long_doc')
-    # if not show_anonymous:
-    #     df = df[~df[COL_NAME_IS_ANONYMOUS]]
     return df
 
 
@@ -143,7 +141,7 @@ def update_metric(
         langs: list,
         reranking_model: list,
         query: str,
-        show_anonymous: bool
+        show_anonymous: bool = False
 ) -> pd.DataFrame:
     if task == 'qa':
         leaderboard_df = get_leaderboard_df(raw_data, task=task, metric=metric)
@@ -163,7 +161,7 @@ def update_metric(
             langs,
             reranking_model,
             query,
-            # show_anonymous
+            show_anonymous
         )
 
 

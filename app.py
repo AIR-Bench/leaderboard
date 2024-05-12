@@ -41,13 +41,14 @@ print(f'QA data loaded: {original_df_qa.shape}')
 print(f'Long-Doc data loaded: {len(original_df_long_doc)}')
 
 leaderboard_df_qa = original_df_qa.copy()
-shown_columns_qa, types_qa = get_default_cols('qa', leaderboard_df_qa.columns, add_fix_cols=True)
+shown_columns_qa, types_qa = get_default_cols(
+    'qa', leaderboard_df_qa.columns, add_fix_cols=True)
 leaderboard_df_qa = leaderboard_df_qa[~leaderboard_df_qa[COL_NAME_IS_ANONYMOUS]][shown_columns_qa]
 
 leaderboard_df_long_doc = original_df_long_doc.copy()
-shown_columns_long_doc, types_long_doc = get_default_cols('long-doc', leaderboard_df_long_doc.columns,
-                                                          add_fix_cols=True)
-leaderboard_df_long_doc = leaderboard_df_long_doc[shown_columns_long_doc]
+shown_columns_long_doc, types_long_doc = get_default_cols(
+    'long-doc', leaderboard_df_long_doc.columns, add_fix_cols=True)
+leaderboard_df_long_doc = leaderboard_df_long_doc[~leaderboard_df_long_doc[COL_NAME_IS_ANONYMOUS]][shown_columns_long_doc]
 
 
 def update_metric_qa(
@@ -67,8 +68,9 @@ def update_metric_long_doc(
         langs: list,
         reranking_model: list,
         query: str,
+        show_anonymous: bool
 ):
-    return update_metric(raw_data, "long-doc", metric, domains, langs, reranking_model, query)
+    return update_metric(raw_data, "long-doc", metric, domains, langs, reranking_model, query, show_anonymous)
 
 
 demo = gr.Blocks(css=custom_css)
@@ -243,6 +245,12 @@ with demo:
                             multiselect=True,
                             interactive=True
                         )
+                    with gr.Row():
+                        show_anonymous = gr.Checkbox(
+                            label="Show anonymous submissions",
+                            value=False,
+                            info="The anonymous submissions might have invalid model information."
+                        )
 
             leaderboard_table_long_doc = gr.components.Dataframe(
                 value=leaderboard_df_long_doc,
@@ -254,7 +262,7 @@ with demo:
 
             # Dummy leaderboard for handling the case when the user uses backspace key
             hidden_leaderboard_table_for_search = gr.components.Dataframe(
-                value=leaderboard_df_long_doc,
+                value=original_df_long_doc,
                 datatype=types_long_doc,
                 visible=False,
             )
@@ -274,7 +282,7 @@ with demo:
 
             # Set column-wise listener
             for selector in [
-                selected_domains, selected_langs, selected_rerankings
+                selected_domains, selected_langs, selected_rerankings, show_anonymous
             ]:
                 selector.change(
                     update_table_long_doc,
@@ -284,6 +292,7 @@ with demo:
                         selected_langs,
                         selected_rerankings,
                         search_bar,
+                        show_anonymous,
                     ],
                     leaderboard_table_long_doc,
                     queue=True,
@@ -298,6 +307,7 @@ with demo:
                     selected_langs,
                     selected_rerankings,
                     search_bar,
+                    show_anonymous,
                 ],
                 leaderboard_table_long_doc,
                 queue=True
