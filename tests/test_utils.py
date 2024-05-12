@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from utils import filter_models, search_table, filter_queries, select_columns, update_table_long_doc
+from utils import filter_models, search_table, filter_queries, select_columns, update_table_long_doc, get_iso_format_timestamp
 
 
 @pytest.fixture
@@ -79,3 +79,10 @@ def test_select_columns(toy_df):
 def test_update_table_long_doc(toy_df_long_doc):
     df_result = update_table_long_doc(toy_df_long_doc, ['law',], ['en',], ["bge-reranker-v2-m3", ], "jina")
     print(df_result)
+
+
+def test_get_iso_format_timestamp():
+    timestamp_config, timestamp_fn = get_iso_format_timestamp()
+    assert len(timestamp_fn) == 14
+    assert len(timestamp_config) == 20
+    assert timestamp_config[-1] == "Z"

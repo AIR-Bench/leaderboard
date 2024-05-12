@@ -1,10 +1,8 @@
 import json
 from typing import List
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
-
-import pytz
 
 import pandas as pd
 
@@ -150,6 +148,20 @@ def upload_file(filepath: str):
 from huggingface_hub import ModelCard
 from huggingface_hub.utils import EntryNotFoundError
 
+
+def get_iso_format_timestamp():
+    # Get the current timestamp with UTC as the timezone
+    current_timestamp = datetime.now(timezone.utc)
+
+    # Remove milliseconds by setting microseconds to zero
+    current_timestamp = current_timestamp.replace(microsecond=0)
+
+    # Convert to ISO 8601 format and replace the offset with 'Z'
+    iso_format_timestamp = current_timestamp.isoformat().replace('+00:00', 'Z')
+    filename_friendly_timestamp = current_timestamp.strftime('%Y%m%d%H%M%S')
+    return iso_format_timestamp, filename_friendly_timestamp
+
+
 def submit_results(filepath: str, model: str, model_url: str, version: str="AIR-Bench_24.04", anonymous=False):
     if not filepath.endswith(".zip"):
         return styled_error(f"file uploading aborted. wrong file type: {filepath}")
@@ -173,9 +185,8 @@ def submit_results(filepath: str, model: str, model_url: str, version: str="AIR-
     # rename the uploaded file
     input_fp = Path(filepath)
     revision = input_fp.name.removesuffix(".zip")
-    timezone = pytz.timezone('UTC')
-    timestamp = datetime.now(timezone).strftime('%Y%m%d%H%M%S')
-    output_fn = f"{timestamp}-{input_fp.name}"
+    timestamp_config, timestamp_fn = get_iso_format_timestamp()
+    output_fn = f"{timestamp_fn}-{input_fp.name}"
     input_folder_path = input_fp.parent
     API.upload_file(
         path_or_fileobj=filepath,
@@ -191,7 +202,7 @@ def submit_results(filepath: str, model: str, model_url: str, version: str="AIR-
         "version": f"{version}",
         "anonymous": f"{anonymous}",
         "revision": f"{revision}",
-        "timestamp": f"{timestamp}"
+        "timestamp": f"{timestamp_config}"
     }
     with open(input_folder_path / output_config_fn, "w") as f:
         json.dump(output_config, f, ensure_ascii=False)
