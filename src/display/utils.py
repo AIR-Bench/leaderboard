@@ -27,6 +27,7 @@ COL_NAME_RERANKING_MODEL_LINK = "Reranking Model LINK"
 COL_NAME_RANK = "Rank 🏆"
 COL_NAME_REVISION = "Revision"
 COL_NAME_TIMESTAMP = "Submission Date"
+COL_NAME_IS_ANONYMOUS = "Anonymous Submission"
 
 
 def get_default_auto_eval_column_dict():
@@ -56,7 +57,11 @@ def get_default_auto_eval_column_dict():
     auto_eval_column_dict.append(
         ["reranking_model_link", ColumnContent, ColumnContent(COL_NAME_RERANKING_MODEL, "markdown", False, hidden=True, never_hidden=False)]
     )
+    auto_eval_column_dict.append(
+        ["is_anonymous", ColumnContent, ColumnContent(COL_NAME_IS_ANONYMOUS, "bool", False, hidden=True)]
+    )
     return auto_eval_column_dict
+
 
 def make_autoevalcolumn(cls_name="BenchmarksQA", benchmarks=BenchmarksQA):
     auto_eval_column_dict = get_default_auto_eval_column_dict()

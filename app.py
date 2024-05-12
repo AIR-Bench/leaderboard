@@ -315,7 +315,7 @@ with demo:
                 with gr.Row():
                     file_output = gr.File()
                 with gr.Row():
-                    submit_anonymous = gr.Checkbox(
+                    is_anonymous = gr.Checkbox(
                         label="Nope. I want to submit anonymously 🥷",
                         value=False,
                         info="Do you want to shown on the leaderboard by default?")
@@ -336,7 +336,7 @@ with demo:
                         model_name,
                         model_url,
                         benchmark_version,
-                        submit_anonymous
+                        is_anonymous
                     ],
                     submission_result,
                     show_progress="hidden"

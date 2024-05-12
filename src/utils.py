@@ -59,7 +59,7 @@ def get_default_cols(task: str, columns: list = [], add_fix_cols: bool = True) -
     for col_name, col_type in zip(cols_list, types_list):
         if col_name not in benchmark_list:
             continue
-        if columns and col_name not in columns:
+        if len(columns) > 0 and col_name not in columns:
             continue
         cols.append(col_name)
         types.append(col_type)
@@ -178,7 +178,7 @@ def get_iso_format_timestamp():
     return iso_format_timestamp, filename_friendly_timestamp
 
 
-def submit_results(filepath: str, model: str, model_url: str, version: str = "AIR-Bench_24.04", anonymous=False):
+def submit_results(filepath: str, model: str, model_url: str, version: str = "AIR-Bench_24.04", is_anonymous=False):
     if not filepath.endswith(".zip"):
         return styled_error(f"file uploading aborted. wrong file type: {filepath}")
 
@@ -218,7 +218,7 @@ def submit_results(filepath: str, model: str, model_url: str, version: str = "AI
         "model_name": f"{model}",
         "model_url": f"{model_url}",
         "version": f"{version}",
-        "anonymous": f"{anonymous}",
+        "is_anonymous": f"{is_anonymous}",
         "revision": f"{revision}",
         "timestamp": f"{timestamp_config}"
     }

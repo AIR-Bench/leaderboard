@@ -40,6 +40,7 @@ class EvalResult:
     metric: str
     timestamp: str = ""  # submission timestamp
     revision: str = ""
+    is_anonymous: bool = False
 
 
 @dataclass
@@ -55,6 +56,7 @@ class FullEvalResult:
     results: List[EvalResult]  # results on all the EvalResults over different tasks and metrics.
     timestamp: str = ""
     revision: str = ""
+    is_anonymous: bool = False
 
     @classmethod
     def init_from_json_file(cls, json_filepath):
@@ -87,7 +89,8 @@ class FullEvalResult:
                 task=config["task"],
                 metric=config["metric"],
                 timestamp=config.get("timestamp", "2024-05-12T12:24:02Z"),
-                revision=config.get("revision", "3a2ba9dcad796a48a02ca1147557724e")
+                revision=config.get("revision", "3a2ba9dcad796a48a02ca1147557724e"),
+                is_anonymous=config.get("is_anonymous", False)
             )
             result_list.append(eval_result)
         return cls(
@@ -98,7 +101,8 @@ class FullEvalResult:
             reranking_model_link=reranking_model_link,
             results=result_list,
             timestamp=result_list[0].timestamp,
-            revision=result_list[0].revision
+            revision=result_list[0].revision,
+            is_anonymous=result_list[0].is_anonymous
         )
 
     def to_dict(self, task='qa', metric='ndcg_at_3') -> List:
