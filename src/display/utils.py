@@ -25,16 +25,30 @@ COL_NAME_RERANKING_MODEL = "Reranking Model"
 COL_NAME_RETRIEVAL_MODEL_LINK = "Retrieval Model LINK"
 COL_NAME_RERANKING_MODEL_LINK = "Reranking Model LINK"
 COL_NAME_RANK = "Rank 🏆"
+COL_NAME_REVISION = "Revision"
+COL_NAME_TIMESTAMP = "Submission Date"
 
-def make_autoevalcolumn(cls_name="BenchmarksQA", benchmarks=BenchmarksQA):
-    ## Leaderboard columns
+
+def get_default_auto_eval_column_dict():
     auto_eval_column_dict = []
     # Init
     auto_eval_column_dict.append(
-        ["retrieval_model", ColumnContent, ColumnContent(COL_NAME_RETRIEVAL_MODEL, "markdown", True, never_hidden=True)]
+        ["rank", ColumnContent, ColumnContent(COL_NAME_RANK, "number", True)]
     )
     auto_eval_column_dict.append(
-        ["reranking_model", ColumnContent, ColumnContent(COL_NAME_RERANKING_MODEL, "markdown", True, never_hidden=True)]
+        ["retrieval_model", ColumnContent, ColumnContent(COL_NAME_RETRIEVAL_MODEL, "markdown", True, hidden=False, never_hidden=True)]
+    )
+    auto_eval_column_dict.append(
+        ["reranking_model", ColumnContent, ColumnContent(COL_NAME_RERANKING_MODEL, "markdown", True, hidden=False, never_hidden=True)]
+    )
+    auto_eval_column_dict.append(
+        ["revision", ColumnContent, ColumnContent(COL_NAME_REVISION, "markdown", True, never_hidden=True)]
+    )
+    auto_eval_column_dict.append(
+        ["timestamp", ColumnContent, ColumnContent(COL_NAME_TIMESTAMP, "date", True, never_hidden=True)]
+    )
+    auto_eval_column_dict.append(
+        ["average", ColumnContent, ColumnContent(COL_NAME_AVG, "number", True)]
     )
     auto_eval_column_dict.append(
         ["retrieval_model_link", ColumnContent, ColumnContent(COL_NAME_RETRIEVAL_MODEL, "markdown", False, hidden=True, never_hidden=False)]
@@ -42,12 +56,11 @@ def make_autoevalcolumn(cls_name="BenchmarksQA", benchmarks=BenchmarksQA):
     auto_eval_column_dict.append(
         ["reranking_model_link", ColumnContent, ColumnContent(COL_NAME_RERANKING_MODEL, "markdown", False, hidden=True, never_hidden=False)]
     )
-    auto_eval_column_dict.append(
-        ["average", ColumnContent, ColumnContent(COL_NAME_AVG, "number", True)]
-    )
-    auto_eval_column_dict.append(
-        ["rank", ColumnContent, ColumnContent(COL_NAME_RANK, "number", True)]
-    )
+    return auto_eval_column_dict
+
+def make_autoevalcolumn(cls_name="BenchmarksQA", benchmarks=BenchmarksQA):
+    auto_eval_column_dict = get_default_auto_eval_column_dict()
+    ## Leaderboard columns
     for benchmark in benchmarks:
         auto_eval_column_dict.append(
             [benchmark.name, ColumnContent, ColumnContent(benchmark.value.col_name, "number", True)]

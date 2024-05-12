@@ -13,6 +13,8 @@ from src.display.utils import (
     COL_NAME_RETRIEVAL_MODEL,
     COL_NAME_RERANKING_MODEL_LINK,
     COL_NAME_RETRIEVAL_MODEL_LINK,
+    COL_NAME_REVISION,
+    COL_NAME_TIMESTAMP,
     COLS_QA,
     QA_BENCHMARK_COLS,
     COLS_LONG_DOC,
@@ -37,6 +39,7 @@ class EvalResult:
     task: str
     metric: str
     timestamp: str = ""  # submission timestamp
+    revision: str = ""
 
 
 @dataclass
@@ -50,7 +53,8 @@ class FullEvalResult:
     retrieval_model_link: str
     reranking_model_link: str
     results: List[EvalResult]  # results on all the EvalResults over different tasks and metrics.
-    date: str = ""
+    timestamp: str = ""
+    revision: str = ""
 
     @classmethod
     def init_from_json_file(cls, json_filepath):
@@ -65,20 +69,25 @@ class FullEvalResult:
         result_list = []
         retrieval_model_link = ""
         reranking_model_link = ""
+        revision = ""
         for item in model_data:
             config = item.get("config", {})
             # eval results for different metrics
             results = item.get("results", [])
-            retrieval_model_link=config["retrieval_model_link"]
-            if config["reranking_model_link"] is not None:
-                reranking_model_link=""
+            retrieval_model_link = config["retrieval_model_link"]
+            if config["reranking_model_link"] is None:
+                reranking_model_link = ""
+            else:
+                reranking_model_link = config["reranking_model_link"]
             eval_result = EvalResult(
                 eval_name=f"{config['retrieval_model']}_{config['reranking_model']}_{config['metric']}",
                 retrieval_model=config["retrieval_model"],
                 reranking_model=config["reranking_model"],
                 results=results,
                 task=config["task"],
-                metric=config["metric"]
+                metric=config["metric"],
+                timestamp=config.get("timestamp", "2024-05-12T12:24:02Z"),
+                revision=config.get("revision", "3a2ba9dcad796a48a02ca1147557724e")
             )
             result_list.append(eval_result)
         return cls(
@@ -87,7 +96,9 @@ class FullEvalResult:
             reranking_model=result_list[0].reranking_model,
             retrieval_model_link=retrieval_model_link,
             reranking_model_link=reranking_model_link,
-            results=result_list
+            results=result_list,
+            timestamp=result_list[0].timestamp,
+            revision=result_list[0].revision
         )
 
     def to_dict(self, task='qa', metric='ndcg_at_3') -> List:
@@ -107,6 +118,8 @@ class FullEvalResult:
                 make_clickable_model(self.reranking_model, self.reranking_model_link))
             results[eval_result.eval_name][COL_NAME_RETRIEVAL_MODEL_LINK] = self.retrieval_model_link
             results[eval_result.eval_name][COL_NAME_RERANKING_MODEL_LINK] = self.reranking_model_link
+            results[eval_result.eval_name][COL_NAME_REVISION] = self.revision
+            results[eval_result.eval_name][COL_NAME_TIMESTAMP] = self.timestamp
 
             # print(f'result loaded: {eval_result.eval_name}')
             for result in eval_result.results:
@@ -193,4 +206,7 @@ def get_leaderboard_df(raw_data: List[FullEvalResult], task: str, metric: str) -
     # filter out if any of the benchmarks have not been produced
     df = df[has_no_nan_values(df, _benchmark_cols)]
     df[COL_NAME_RANK] = df[COL_NAME_AVG].rank(ascending=False, method="min")
+
+    # shorten the revision
+    df[COL_NAME_REVISION] = df[COL_NAME_REVISION].str[:6]
     return df

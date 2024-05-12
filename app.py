@@ -8,17 +8,17 @@ from src.about import (
     TITLE,
     EVALUATION_QUEUE_TEXT
 )
+from src.benchmarks import DOMAIN_COLS_QA, LANG_COLS_QA, DOMAIN_COLS_LONG_DOC, LANG_COLS_LONG_DOC, METRIC_LIST, \
+    DEFAULT_METRIC
 from src.display.css_html_js import custom_css
-from src.leaderboard.read_evals import get_raw_eval_results, get_leaderboard_df
-
 from src.envs import API, EVAL_RESULTS_PATH, REPO_ID, RESULTS_REPO, TOKEN
+from src.leaderboard.read_evals import get_raw_eval_results, get_leaderboard_df
 from utils import update_table, update_metric, update_table_long_doc, upload_file, get_default_cols, submit_results
-from src.benchmarks import DOMAIN_COLS_QA, LANG_COLS_QA, DOMAIN_COLS_LONG_DOC, LANG_COLS_LONG_DOC, METRIC_LIST, DEFAULT_METRIC
-from src.display.utils import TYPES_QA, TYPES_LONG_DOC
 
 
 def restart_space():
     API.restart_space(repo_id=REPO_ID)
+
 
 try:
     snapshot_download(
@@ -39,11 +39,12 @@ print(f'QA data loaded: {original_df_qa.shape}')
 print(f'Long-Doc data loaded: {len(original_df_long_doc)}')
 
 leaderboard_df_qa = original_df_qa.copy()
-shown_columns_qa = get_default_cols('qa', leaderboard_df_qa.columns, add_fix_cols=True)
+shown_columns_qa, types_qa = get_default_cols('qa', leaderboard_df_qa.columns, add_fix_cols=True)
 leaderboard_df_qa = leaderboard_df_qa[shown_columns_qa]
 
 leaderboard_df_long_doc = original_df_long_doc.copy()
-shown_columns_long_doc = get_default_cols('long-doc', leaderboard_df_long_doc.columns, add_fix_cols=True)
+shown_columns_long_doc, types_long_doc = get_default_cols('long-doc', leaderboard_df_long_doc.columns,
+                                                          add_fix_cols=True)
 leaderboard_df_long_doc = leaderboard_df_long_doc[shown_columns_long_doc]
 
 
@@ -55,6 +56,7 @@ def update_metric_qa(
         query: str,
 ):
     return update_metric(raw_data, 'qa', metric, domains, langs, reranking_model, query)
+
 
 def update_metric_long_doc(
         metric: str,
@@ -124,7 +126,7 @@ with demo:
 
             leaderboard_table = gr.components.Dataframe(
                 value=leaderboard_df_qa,
-                datatype=TYPES_QA,
+                datatype=types_qa,
                 elem_id="leaderboard-table",
                 interactive=False,
                 visible=True,
@@ -133,7 +135,7 @@ with demo:
             # Dummy leaderboard for handling the case when the user uses backspace key
             hidden_leaderboard_table_for_search = gr.components.Dataframe(
                 value=leaderboard_df_qa,
-                datatype=TYPES_QA,
+                datatype=types_qa,
                 # headers=COLS,
                 # datatype=TYPES,
                 visible=False,
@@ -234,7 +236,7 @@ with demo:
 
             leaderboard_table_long_doc = gr.components.Dataframe(
                 value=leaderboard_df_long_doc,
-                datatype=TYPES_LONG_DOC,
+                datatype=types_long_doc,
                 elem_id="leaderboard-table-long-doc",
                 interactive=False,
                 visible=True,
@@ -243,7 +245,7 @@ with demo:
             # Dummy leaderboard for handling the case when the user uses backspace key
             hidden_leaderboard_table_for_search = gr.components.Dataframe(
                 value=leaderboard_df_long_doc,
-                datatype=TYPES_LONG_DOC,
+                datatype=types_long_doc,
                 visible=False,
             )
 
@@ -300,7 +302,7 @@ with demo:
                 with gr.Row():
                     with gr.Column():
                         benchmark_version = gr.Dropdown(
-                            ["AIR-Bench_24.04",],
+                            ["AIR-Bench_24.04", ],
                             value="AIR-Bench_24.04",
                             interactive=True,
                             label="AIR-Bench Version")

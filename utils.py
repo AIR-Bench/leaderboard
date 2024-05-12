@@ -7,7 +7,7 @@ from pathlib import Path
 import pandas as pd
 
 from src.benchmarks import BENCHMARK_COLS_QA, BENCHMARK_COLS_LONG_DOC, BenchmarksQA, BenchmarksLongDoc
-from src.display.utils import AutoEvalColumnQA, AutoEvalColumnLongDoc, COLS_QA, COLS_LONG_DOC, COL_NAME_RANK, COL_NAME_AVG, COL_NAME_RERANKING_MODEL, COL_NAME_RETRIEVAL_MODEL
+from src.display.utils import COLS_QA, TYPES_QA, COLS_LONG_DOC, TYPES_LONG_DOC, COL_NAME_RANK, COL_NAME_AVG, COL_NAME_RERANKING_MODEL, COL_NAME_RETRIEVAL_MODEL, COL_NAME_REVISION, COL_NAME_TIMESTAMP, AutoEvalColumnQA, AutoEvalColumnLongDoc, get_default_auto_eval_column_dict
 from src.leaderboard.read_evals import FullEvalResult, get_leaderboard_df
 from src.envs import API, SEARCH_RESULTS_REPO, CACHE_PATH
 from src.display.formatting import styled_message, styled_error
@@ -44,22 +44,37 @@ def search_table(df: pd.DataFrame, query: str) -> pd.DataFrame:
 
 
 def get_default_cols(task: str, columns: list, add_fix_cols: bool=True) -> list:
+    cols = []
+    types = []
     if task == "qa":
-        cols = list(frozenset(COLS_QA).intersection(frozenset(BENCHMARK_COLS_QA)).intersection(frozenset(columns)))
+        cols_list = COLS_QA
+        types_list = TYPES_QA
+        benchmark_list = BENCHMARK_COLS_QA
     elif task == "long-doc":
-        cols = list(frozenset(COLS_LONG_DOC).intersection(frozenset(BENCHMARK_COLS_LONG_DOC)).intersection(frozenset(columns)))
+        cols_list = COLS_LONG_DOC
+        types_list = TYPES_LONG_DOC
+        benchmark_list = BENCHMARK_COLS_LONG_DOC
     else:
         raise NotImplemented
+    for col_name, col_type in zip(cols_list, types_list):
+        if col_name not in benchmark_list:
+            continue
+        if col_name not in columns:
+            continue
+        cols.append(col_name)
+        types.append(col_type)
+
     if add_fix_cols:
         cols = FIXED_COLS + cols
-    return cols
+        types = FIXED_COLS_TYPES + types
+    return cols, types
 
-FIXED_COLS = [
-        COL_NAME_RANK,
-        COL_NAME_RETRIEVAL_MODEL,
-        COL_NAME_RERANKING_MODEL,
-        COL_NAME_AVG,
-    ]
+fixed_cols = get_default_auto_eval_column_dict()[:-2]
+
+
+FIXED_COLS = [c.name for _, _, c in fixed_cols]
+FIXED_COLS_TYPES = [c.type for _, _, c in fixed_cols]
+
 
 def select_columns(df: pd.DataFrame, domain_query: list, language_query: list, task: str = "qa") -> pd.DataFrame:
     cols = get_default_cols(task=task, columns=df.columns, add_fix_cols=False)
