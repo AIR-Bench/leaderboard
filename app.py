@@ -13,7 +13,7 @@ from src.leaderboard.read_evals import get_raw_eval_results, get_leaderboard_df
 
 from src.envs import API, EVAL_RESULTS_PATH, REPO_ID, RESULTS_REPO, TOKEN
 from utils import update_table, update_metric, update_table_long_doc, upload_file, get_default_cols, submit_results
-from src.benchmarks import DOMAIN_COLS_QA, LANG_COLS_QA, DOMAIN_COLS_LONG_DOC, LANG_COLS_LONG_DOC, metric_list
+from src.benchmarks import DOMAIN_COLS_QA, LANG_COLS_QA, DOMAIN_COLS_LONG_DOC, LANG_COLS_LONG_DOC, METRIC_LIST, DEFAULT_METRIC
 from src.display.utils import TYPES_QA, TYPES_LONG_DOC
 
 
@@ -31,9 +31,9 @@ except Exception:
 raw_data = get_raw_eval_results(f"{EVAL_RESULTS_PATH}/AIR-Bench_24.04")
 
 original_df_qa = get_leaderboard_df(
-    raw_data, task='qa', metric='ndcg_at_10')
+    raw_data, task='qa', metric=DEFAULT_METRIC)
 original_df_long_doc = get_leaderboard_df(
-    raw_data, task='long-doc', metric='ndcg_at_10')
+    raw_data, task='long-doc', metric=DEFAULT_METRIC)
 print(f'raw data: {len(raw_data)}')
 print(f'QA data loaded: {original_df_qa.shape}')
 print(f'Long-Doc data loaded: {len(original_df_long_doc)}')
@@ -75,22 +75,33 @@ with demo:
         with gr.TabItem("QA", elem_id="qa-benchmark-tab-table", id=0):
             with gr.Row():
                 with gr.Column():
-                    # search bar for model name
+                    # search retrieval models
                     with gr.Row():
                         search_bar = gr.Textbox(
-                            placeholder=" 🔍 Search for your model (separate multiple queries with `;`) and press ENTER...",
+                            placeholder=" 🔍 Search for retrieval models (separate multiple queries with `;`) and press ENTER...",
                             show_label=False,
                             elem_id="search-bar",
+                            info="Search the retrieval models"
                         )
+                    # select reranking model
+                    reranking_models = list(frozenset([eval_result.reranking_model for eval_result in raw_data]))
+                    with gr.Row():
+                        selected_rerankings = gr.CheckboxGroup(
+                            choices=reranking_models,
+                            value=reranking_models,
+                            label="Select the reranking models",
+                            elem_id="reranking-select",
+                            interactive=True
+                        )
+                with gr.Column(min_width=320):
                     # select the metric
                     selected_metric = gr.Dropdown(
-                        choices=metric_list,
-                        value=metric_list[1],
+                        choices=METRIC_LIST,
+                        value=DEFAULT_METRIC,
                         label="Select the metric",
                         interactive=True,
                         elem_id="metric-select",
                     )
-                with gr.Column(min_width=320):
                     # select domain
                     with gr.Row():
                         selected_domains = gr.CheckboxGroup(
@@ -108,16 +119,6 @@ with demo:
                             label="Select the languages",
                             elem_id="language-column-select",
                             multiselect=True,
-                            interactive=True
-                        )
-                    # select reranking model
-                    reranking_models = list(frozenset([eval_result.reranking_model for eval_result in raw_data]))
-                    with gr.Row():
-                        selected_rerankings = gr.CheckboxGroup(
-                            choices=reranking_models,
-                            value=reranking_models,
-                            label="Select the reranking models",
-                            elem_id="reranking-select",
                             interactive=True
                         )
 
@@ -187,19 +188,30 @@ with demo:
                 with gr.Column():
                     with gr.Row():
                         search_bar = gr.Textbox(
-                            placeholder=" 🔍 Search for your model (separate multiple queries with `;`) and press ENTER...",
+                            placeholder=" 🔍 Search for retrieval models (separate multiple queries with `;`) and press ENTER...",
                             show_label=False,
                             elem_id="search-bar-long-doc",
                         )
-                        # select the metric
-                    selected_metric = gr.Dropdown(
-                        choices=metric_list,
-                        value=metric_list[1],
-                        label="Select the metric",
-                        interactive=True,
-                        elem_id="metric-select-long-doc",
-                    )
+                    # select reranking model
+                    reranking_models = list(frozenset([eval_result.reranking_model for eval_result in raw_data]))
+                    with gr.Row():
+                        selected_rerankings = gr.CheckboxGroup(
+                            choices=reranking_models,
+                            value=reranking_models,
+                            label="Select the reranking models",
+                            elem_id="reranking-select-long-doc",
+                            interactive=True
+                        )
                 with gr.Column(min_width=320):
+                    # select the metric
+                    with gr.Row():
+                        selected_metric = gr.Dropdown(
+                            choices=METRIC_LIST,
+                            value=DEFAULT_METRIC,
+                            label="Select the metric",
+                            interactive=True,
+                            elem_id="metric-select-long-doc",
+                        )
                     # select domain
                     with gr.Row():
                         selected_domains = gr.CheckboxGroup(
@@ -217,16 +229,6 @@ with demo:
                             label="Select the languages",
                             elem_id="language-column-select-long-doc",
                             multiselect=True,
-                            interactive=True
-                        )
-                    # select reranking model
-                    reranking_models = list(frozenset([eval_result.reranking_model for eval_result in raw_data]))
-                    with gr.Row():
-                        selected_rerankings = gr.CheckboxGroup(
-                            choices=reranking_models,
-                            value=reranking_models,
-                            label="Select the reranking models",
-                            elem_id="reranking-select-long-doc",
                             interactive=True
                         )
 

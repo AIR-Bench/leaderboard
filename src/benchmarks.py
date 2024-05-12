@@ -70,7 +70,7 @@ dataset_dict = {
     }
 }
 
-metric_list = [
+METRIC_LIST = [
     "ndcg_at_1",
     "ndcg_at_3",
     "ndcg_at_5",
@@ -130,7 +130,7 @@ for task, domain_dict in dataset_dict.items():
                     benchmark_name = f"{domain}_{lang}_{dataset}"
                     benchmark_name = get_safe_name(benchmark_name)
                     col_name = benchmark_name
-                    for metric in metric_list:
+                    for metric in METRIC_LIST:
                         long_doc_benchmark_dict[benchmark_name] = Benchmark(benchmark_name, metric, col_name, domain,
                                                                             lang, task)
 
@@ -145,3 +145,5 @@ LANG_COLS_QA = list(frozenset([c.lang for c in qa_benchmark_dict.values()]))
 
 DOMAIN_COLS_LONG_DOC = list(frozenset([c.domain for c in long_doc_benchmark_dict.values()]))
 LANG_COLS_LONG_DOC = list(frozenset([c.lang for c in long_doc_benchmark_dict.values()]))
+
+DEFAULT_METRIC = "ndcg_at_10"

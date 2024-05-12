@@ -33,8 +33,8 @@ def filter_queries(query: str, filtered_df: pd.DataFrame) -> pd.DataFrame:
             filtered_df = pd.concat(final_df)
             filtered_df = filtered_df.drop_duplicates(
                 subset=[
-                    AutoEvalColumnQA.retrieval_model.name,
-                    AutoEvalColumnQA.reranking_model.name,
+                    COL_NAME_RETRIEVAL_MODEL,
+                    COL_NAME_RERANKING_MODEL,
                 ]
             )
 
@@ -42,7 +42,7 @@ def filter_queries(query: str, filtered_df: pd.DataFrame) -> pd.DataFrame:
 
 
 def search_table(df: pd.DataFrame, query: str) -> pd.DataFrame:
-    return df[(df[AutoEvalColumnQA.retrieval_model.name].str.contains(query, case=False))]
+    return df[(df[COL_NAME_RETRIEVAL_MODEL].str.contains(query, case=False))]
 
 
 def get_default_cols(task: str, columns: list, add_fix_cols: bool=True) -> list:
