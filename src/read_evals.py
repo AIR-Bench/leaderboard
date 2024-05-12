@@ -91,7 +91,7 @@ class FullEvalResult:
                 metric=config["metric"],
                 timestamp=config.get("timestamp", "2024-05-12T12:24:02Z"),
                 revision=config.get("revision", "3a2ba9dcad796a48a02ca1147557724e"),
-                is_anonymous=config.get("is_anonymous", True)
+                is_anonymous=config.get("is_anonymous", False)
             )
             result_list.append(eval_result)
         return cls(
