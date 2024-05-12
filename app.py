@@ -202,6 +202,7 @@ with demo:
                 with gr.Column():
                     with gr.Row():
                         search_bar = gr.Textbox(
+                            info="Search the retrieval models",
                             placeholder=" 🔍 Search for retrieval models (separate multiple queries with `;`) and press ENTER...",
                             show_label=False,
                             elem_id="search-bar-long-doc",
@@ -276,6 +277,7 @@ with demo:
                     selected_langs,
                     selected_rerankings,
                     search_bar,
+                    show_anonymous,
                 ],
                 leaderboard_table_long_doc,
             )
