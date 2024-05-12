@@ -1,8 +1,7 @@
 import pandas as pd
 import pytest
 
-from utils import filter_models, search_table, filter_queries, select_columns, update_table_long_doc, get_iso_format_timestamp, get_default_cols
-from src.display.utils import COLS_QA
+from src.utils import filter_models, search_table, filter_queries, select_columns, update_table_long_doc, get_iso_format_timestamp, get_default_cols
 
 
 @pytest.fixture
@@ -90,6 +89,6 @@ def test_get_iso_format_timestamp():
 
 
 def test_get_default_cols():
-    cols, types = get_default_cols("qa", COLS_QA)
+    cols, types = get_default_cols("qa")
     for c, t in zip(cols, types):
         print(f"type({c}): {t}")

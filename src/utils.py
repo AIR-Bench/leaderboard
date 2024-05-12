@@ -43,7 +43,7 @@ def search_table(df: pd.DataFrame, query: str) -> pd.DataFrame:
     return df[(df[COL_NAME_RETRIEVAL_MODEL].str.contains(query, case=False))]
 
 
-def get_default_cols(task: str, columns: list, add_fix_cols: bool = True) -> list:
+def get_default_cols(task: str, columns: list = [], add_fix_cols: bool = True) -> list:
     cols = []
     types = []
     if task == "qa":
@@ -59,7 +59,7 @@ def get_default_cols(task: str, columns: list, add_fix_cols: bool = True) -> lis
     for col_name, col_type in zip(cols_list, types_list):
         if col_name not in benchmark_list:
             continue
-        if col_name not in columns:
+        if columns and col_name not in columns:
             continue
         cols.append(col_name)
         types.append(col_type)
