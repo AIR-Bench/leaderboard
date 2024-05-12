@@ -21,14 +21,14 @@ def restart_space():
     API.restart_space(repo_id=REPO_ID)
 
 
-# try:
-#     snapshot_download(
-#         repo_id=RESULTS_REPO, local_dir=EVAL_RESULTS_PATH, repo_type="dataset", tqdm_class=None, etag_timeout=30,
-#         token=TOKEN
-#     )
-# except Exception as e:
-#     print(f'failed to download')
-#     restart_space()
+try:
+    snapshot_download(
+        repo_id=RESULTS_REPO, local_dir=EVAL_RESULTS_PATH, repo_type="dataset", tqdm_class=None, etag_timeout=30,
+        token=TOKEN
+    )
+except Exception as e:
+    print(f'failed to download')
+    restart_space()
 
 raw_data = get_raw_eval_results(f"{EVAL_RESULTS_PATH}/AIR-Bench_24.04")
 
