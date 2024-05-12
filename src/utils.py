@@ -198,18 +198,19 @@ def submit_results(filepath: str, model: str, model_url: str, version: str = "AI
         return styled_error("failed to submit. Model name can not be empty.")
 
     # validate model url
-    if not model_url.startswith("https://huggingface.co/"):
-        return styled_error(
-            f"failed to submit. Model url must be a link to a valid HuggingFace model on HuggingFace space. Illegal model url: {model_url}")
-
-    # validate model card
-    repo_id = model_url.removeprefix("https://huggingface.co/")
-    try:
-        card = ModelCard.load(repo_id)
-    except EntryNotFoundError as e:
-        print(e)
-        return styled_error(
-            f"failed to submit. Model url must be a link to a valid HuggingFace model on HuggingFace space. Could not get model {repo_id}")
+    if not is_anonymous:
+        if not model_url.startswith("https://") and not model_url.startswith("http://"):
+            # TODO: retrieve the model page and find the model name on the page
+            return styled_error(
+                f"failed to submit. Model url must start with `https://` or `http://`. Illegal model url: {model_url}")
+        if model_url.startswith("https://huggingface.co/"):
+            # validate model card
+            repo_id = model_url.removeprefix("https://huggingface.co/")
+            try:
+                card = ModelCard.load(repo_id)
+            except EntryNotFoundError as e:
+                return styled_error(
+                    f"failed to submit. Model url must be a link to a valid HuggingFace model on HuggingFace space. Could not get model {repo_id}")
 
     # rename the uploaded file
     input_fp = Path(filepath)
