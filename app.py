@@ -12,7 +12,7 @@ from src.benchmarks import DOMAIN_COLS_QA, LANG_COLS_QA, DOMAIN_COLS_LONG_DOC, L
     DEFAULT_METRIC
 from src.display.css_html_js import custom_css
 from src.envs import API, EVAL_RESULTS_PATH, REPO_ID, RESULTS_REPO, TOKEN
-from src.leaderboard.read_evals import get_raw_eval_results, get_leaderboard_df
+from src.read_evals import get_raw_eval_results, get_leaderboard_df
 from utils import update_table, update_metric, update_table_long_doc, upload_file, get_default_cols, submit_results
 
 

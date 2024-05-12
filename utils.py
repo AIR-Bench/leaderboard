@@ -1,16 +1,16 @@
 import json
-from typing import List
-import os
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import List
 
 import pandas as pd
 
 from src.benchmarks import BENCHMARK_COLS_QA, BENCHMARK_COLS_LONG_DOC, BenchmarksQA, BenchmarksLongDoc
-from src.display.utils import COLS_QA, TYPES_QA, COLS_LONG_DOC, TYPES_LONG_DOC, COL_NAME_RANK, COL_NAME_AVG, COL_NAME_RERANKING_MODEL, COL_NAME_RETRIEVAL_MODEL, COL_NAME_REVISION, COL_NAME_TIMESTAMP, AutoEvalColumnQA, AutoEvalColumnLongDoc, get_default_auto_eval_column_dict
-from src.leaderboard.read_evals import FullEvalResult, get_leaderboard_df
-from src.envs import API, SEARCH_RESULTS_REPO, CACHE_PATH
 from src.display.formatting import styled_message, styled_error
+from src.display.utils import COLS_QA, TYPES_QA, COLS_LONG_DOC, TYPES_LONG_DOC, COL_NAME_RANK, COL_NAME_AVG, \
+    COL_NAME_RERANKING_MODEL, COL_NAME_RETRIEVAL_MODEL, get_default_auto_eval_column_dict
+from src.envs import API, SEARCH_RESULTS_REPO
+from src.read_evals import FullEvalResult, get_leaderboard_df
 
 
 def filter_models(df: pd.DataFrame, reranking_query: list) -> pd.DataFrame:
@@ -43,7 +43,7 @@ def search_table(df: pd.DataFrame, query: str) -> pd.DataFrame:
     return df[(df[COL_NAME_RETRIEVAL_MODEL].str.contains(query, case=False))]
 
 
-def get_default_cols(task: str, columns: list, add_fix_cols: bool=True) -> list:
+def get_default_cols(task: str, columns: list, add_fix_cols: bool = True) -> list:
     cols = []
     types = []
     if task == "qa":
@@ -69,8 +69,8 @@ def get_default_cols(task: str, columns: list, add_fix_cols: bool=True) -> list:
         types = FIXED_COLS_TYPES + types
     return cols, types
 
-fixed_cols = get_default_auto_eval_column_dict()[:-2]
 
+fixed_cols = get_default_auto_eval_column_dict()[:-2]
 
 FIXED_COLS = [c.name for _, _, c in fixed_cols]
 FIXED_COLS_TYPES = [c.type for _, _, c in fixed_cols]
@@ -160,6 +160,7 @@ def upload_file(filepath: str):
         return filepath
     return filepath
 
+
 from huggingface_hub import ModelCard
 from huggingface_hub.utils import EntryNotFoundError
 
@@ -177,7 +178,7 @@ def get_iso_format_timestamp():
     return iso_format_timestamp, filename_friendly_timestamp
 
 
-def submit_results(filepath: str, model: str, model_url: str, version: str="AIR-Bench_24.04", anonymous=False):
+def submit_results(filepath: str, model: str, model_url: str, version: str = "AIR-Bench_24.04", anonymous=False):
     if not filepath.endswith(".zip"):
         return styled_error(f"file uploading aborted. wrong file type: {filepath}")
 
@@ -187,15 +188,17 @@ def submit_results(filepath: str, model: str, model_url: str, version: str="AIR-
 
     # validate model url
     if not model_url.startswith("https://huggingface.co/"):
-        return styled_error(f"failed to submit. Model url must be a link to a valid HuggingFace model on HuggingFace space. Illegal model url: {model_url}")
+        return styled_error(
+            f"failed to submit. Model url must be a link to a valid HuggingFace model on HuggingFace space. Illegal model url: {model_url}")
 
     # validate model card
-    repo_id=model_url.removeprefix("https://huggingface.co/")
+    repo_id = model_url.removeprefix("https://huggingface.co/")
     try:
         card = ModelCard.load(repo_id)
     except EntryNotFoundError as e:
         print(e)
-        return styled_error(f"failed to submit. Model url must be a link to a valid HuggingFace model on HuggingFace space. Could not get model {repo_id}")
+        return styled_error(
+            f"failed to submit. Model url must be a link to a valid HuggingFace model on HuggingFace space. Could not get model {repo_id}")
 
     # rename the uploaded file
     input_fp = Path(filepath)
@@ -223,7 +226,7 @@ def submit_results(filepath: str, model: str, model_url: str, version: str="AIR-
         json.dump(output_config, f, ensure_ascii=False)
     API.upload_file(
         path_or_fileobj=input_folder_path / output_config_fn,
-        path_in_repo= f"{version}/{model}/{output_config_fn}",
+        path_in_repo=f"{version}/{model}/{output_config_fn}",
         repo_id=SEARCH_RESULTS_REPO,
         repo_type="dataset",
         commit_message=f"feat: submit {model} config")

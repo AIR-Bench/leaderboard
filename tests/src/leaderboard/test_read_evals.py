@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from src.leaderboard.read_evals import FullEvalResult, get_raw_eval_results, get_leaderboard_df
+from src.read_evals import FullEvalResult, get_raw_eval_results, get_leaderboard_df
 
 cur_fp = Path(__file__)
 
