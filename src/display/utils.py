@@ -52,10 +52,10 @@ def get_default_auto_eval_column_dict():
         ["average", ColumnContent, ColumnContent(COL_NAME_AVG, "number", True)]
     )
     auto_eval_column_dict.append(
-        ["retrieval_model_link", ColumnContent, ColumnContent(COL_NAME_RETRIEVAL_MODEL, "markdown", False, hidden=True, never_hidden=False)]
+        ["retrieval_model_link", ColumnContent, ColumnContent(COL_NAME_RETRIEVAL_MODEL_LINK, "markdown", False, hidden=True, never_hidden=False)]
     )
     auto_eval_column_dict.append(
-        ["reranking_model_link", ColumnContent, ColumnContent(COL_NAME_RERANKING_MODEL, "markdown", False, hidden=True, never_hidden=False)]
+        ["reranking_model_link", ColumnContent, ColumnContent(COL_NAME_RERANKING_MODEL_LINK, "markdown", False, hidden=True, never_hidden=False)]
     )
     auto_eval_column_dict.append(
         ["is_anonymous", ColumnContent, ColumnContent(COL_NAME_IS_ANONYMOUS, "bool", False, hidden=True)]

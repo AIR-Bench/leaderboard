@@ -92,3 +92,4 @@ def test_get_default_cols():
     cols, types = get_default_cols("qa")
     for c, t in zip(cols, types):
         print(f"type({c}): {t}")
+    assert len(frozenset(cols)) == len(cols)

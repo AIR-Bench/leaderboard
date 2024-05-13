@@ -43,7 +43,7 @@ def search_table(df: pd.DataFrame, query: str) -> pd.DataFrame:
     return df[(df[COL_NAME_RETRIEVAL_MODEL].str.contains(query, case=False))]
 
 
-def get_default_cols(task: str, columns: list = [], add_fix_cols: bool = True) -> list:
+def get_default_cols(task: str, columns: list=[], add_fix_cols: bool=True) -> list:
     cols = []
     types = []
     if task == "qa":
@@ -65,12 +65,19 @@ def get_default_cols(task: str, columns: list = [], add_fix_cols: bool = True) -
         types.append(col_type)
 
     if add_fix_cols:
-        cols = FIXED_COLS + cols
-        types = FIXED_COLS_TYPES + types
+        _cols = []
+        _types = []
+        for col_name, col_type in zip(cols, types):
+            if col_name in FIXED_COLS:
+                continue
+            _cols.append(col_name)
+            _types.append(col_type)
+        cols = FIXED_COLS + _cols
+        types = FIXED_COLS_TYPES + _types
     return cols, types
 
 
-fixed_cols = get_default_auto_eval_column_dict()[:-2]
+fixed_cols = get_default_auto_eval_column_dict()[:-3]
 
 FIXED_COLS = [c.name for _, _, c in fixed_cols]
 FIXED_COLS_TYPES = [c.type for _, _, c in fixed_cols]
