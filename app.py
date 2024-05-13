@@ -41,6 +41,7 @@ print(f'QA data loaded: {original_df_qa.shape}')
 print(f'Long-Doc data loaded: {len(original_df_long_doc)}')
 
 leaderboard_df_qa = original_df_qa.copy()
+# leaderboard_df_qa = leaderboard_df_qa[has_no_nan_values(df, _benchmark_cols)]
 shown_columns_qa, types_qa = get_default_cols(
     'qa', leaderboard_df_qa.columns, add_fix_cols=True)
 leaderboard_df_qa = leaderboard_df_qa[~leaderboard_df_qa[COL_NAME_IS_ANONYMOUS]][shown_columns_qa]

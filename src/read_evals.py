@@ -211,7 +211,6 @@ def get_leaderboard_df(raw_data: List[FullEvalResult], task: str, metric: str) -
     df = df[_cols].round(decimals=2)
 
     # filter out if any of the benchmarks have not been produced
-    df = df[has_no_nan_values(df, _benchmark_cols)]
     df[COL_NAME_RANK] = df[COL_NAME_AVG].rank(ascending=False, method="min")
 
     # shorten the revision
