@@ -262,7 +262,7 @@ def submit_results(filepath: str, model: str, model_url: str, reranker: str, rer
         "timestamp": f"{timestamp_config}"
     }
     with open(input_folder_path / output_config_fn, "w") as f:
-        json.dump(output_config, f, ensure_ascii=False)
+        json.dump(output_config, f, indent=4, ensure_ascii=False)
     API.upload_file(
         path_or_fileobj=input_folder_path / output_config_fn,
         path_in_repo=f"{version}/{model}/{reranker}/{output_config_fn}",
