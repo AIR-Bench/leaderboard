@@ -268,7 +268,7 @@ def submit_results(filepath: str, model: str, model_url: str, reranker: str, rer
         path_in_repo=f"{version}/{model}/{reranker}/{output_config_fn}",
         repo_id=SEARCH_RESULTS_REPO,
         repo_type="dataset",
-        commit_message=f"feat: submit {model} config")
+        commit_message=f"feat: submit {model} + {reranker} config")
     return styled_message(
         f"Thanks for submission!\nSubmission revision: {revision}"
     )
