@@ -1,4 +1,5 @@
 import json
+import hashlib
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import List
@@ -196,6 +197,19 @@ def get_iso_format_timestamp():
     return iso_format_timestamp, filename_friendly_timestamp
 
 
+def calculate_file_md5(file_path):
+    md5 = hashlib.md5()
+
+    with open(file_path, 'rb') as f:
+        while True:
+            data = f.read(4096)
+            if not data:
+                break
+            md5.update(data)
+
+    return md5.hexdigest()
+
+
 def submit_results(filepath: str, model: str, model_url: str, reranker: str, reranker_url: str, version: str = "AIR-Bench_24.04", is_anonymous=False):
     if not filepath.endswith(".zip"):
         return styled_error(f"file uploading aborted. wrong file type: {filepath}")
@@ -221,9 +235,9 @@ def submit_results(filepath: str, model: str, model_url: str, reranker: str, rer
 
     # rename the uploaded file
     input_fp = Path(filepath)
-    revision = input_fp.name.removesuffix(".zip")
+    revision = calculate_file_md5(filepath)
     timestamp_config, timestamp_fn = get_iso_format_timestamp()
-    output_fn = f"{timestamp_fn}-{input_fp.name}"
+    output_fn = f"{timestamp_fn}-{revision}.zip"
     input_folder_path = input_fp.parent
 
     if not reranker:
