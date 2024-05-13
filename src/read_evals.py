@@ -153,7 +153,7 @@ def get_raw_eval_results(results_path: str) -> List[FullEvalResult]:
 
         # select the latest results
         for file in files:
-            if not (file.startswith("results_") and file.endswith(".json")):
+            if not (file.startswith("results") and file.endswith(".json")):
                 print(f'skip {file}')
                 continue
             model_result_filepaths.append(os.path.join(root, file))
