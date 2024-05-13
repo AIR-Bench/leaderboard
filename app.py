@@ -333,6 +333,10 @@ with demo:
                         model_name = gr.Textbox(label="Model name")
                     with gr.Column():
                         model_url = gr.Textbox(label="Model URL")
+                    with gr.Column():
+                        reranker_name = gr.Textbox(label="Reranker name")
+                    with gr.Column():
+                        reranker_url = gr.Textbox(label="Reranker URL")
                 with gr.Row():
                     upload_button = gr.UploadButton("Click to upload search results", file_count="single")
                 with gr.Row():
@@ -358,6 +362,8 @@ with demo:
                         file_output,
                         model_name,
                         model_url,
+                        reranker_name,
+                        reranker_url,
                         benchmark_version,
                         is_anonymous
                     ],

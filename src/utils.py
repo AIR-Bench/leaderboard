@@ -196,7 +196,7 @@ def get_iso_format_timestamp():
     return iso_format_timestamp, filename_friendly_timestamp
 
 
-def submit_results(filepath: str, model: str, model_url: str, version: str = "AIR-Bench_24.04", is_anonymous=False):
+def submit_results(filepath: str, model: str, model_url: str, reranker: str, reranker_url: str, version: str = "AIR-Bench_24.04", is_anonymous=False):
     if not filepath.endswith(".zip"):
         return styled_error(f"file uploading aborted. wrong file type: {filepath}")
 
@@ -236,6 +236,8 @@ def submit_results(filepath: str, model: str, model_url: str, version: str = "AI
     output_config = {
         "model_name": f"{model}",
         "model_url": f"{model_url}",
+        "reranker_name": f"{reranker}",
+        "reranker_url": f"{reranker_url}",
         "version": f"{version}",
         "is_anonymous": f"{is_anonymous}",
         "revision": f"{revision}",
