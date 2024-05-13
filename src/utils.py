@@ -225,9 +225,13 @@ def submit_results(filepath: str, model: str, model_url: str, reranker: str, rer
     timestamp_config, timestamp_fn = get_iso_format_timestamp()
     output_fn = f"{timestamp_fn}-{input_fp.name}"
     input_folder_path = input_fp.parent
+
+    if not reranker:
+        reranker = 'NoReranker'
+    
     API.upload_file(
         path_or_fileobj=filepath,
-        path_in_repo=f"{version}/{model}/{output_fn}",
+        path_in_repo=f"{version}/{model}/{reranker}/{output_fn}",
         repo_id=SEARCH_RESULTS_REPO,
         repo_type="dataset",
         commit_message=f"feat: submit {model} to evaluate")
@@ -247,7 +251,7 @@ def submit_results(filepath: str, model: str, model_url: str, reranker: str, rer
         json.dump(output_config, f, ensure_ascii=False)
     API.upload_file(
         path_or_fileobj=input_folder_path / output_config_fn,
-        path_in_repo=f"{version}/{model}/{output_config_fn}",
+        path_in_repo=f"{version}/{model}/{reranker}/{output_config_fn}",
         repo_id=SEARCH_RESULTS_REPO,
         repo_type="dataset",
         commit_message=f"feat: submit {model} config")
