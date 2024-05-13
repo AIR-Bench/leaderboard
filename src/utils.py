@@ -257,7 +257,7 @@ def submit_results(filepath: str, model: str, model_url: str, reranker: str, rer
         "reranker_name": f"{reranker}",
         "reranker_url": f"{reranker_url}",
         "version": f"{version}",
-        "is_anonymous": f"{is_anonymous}",
+        "is_anonymous": is_anonymous,
         "revision": f"{revision}",
         "timestamp": f"{timestamp_config}"
     }
