@@ -133,7 +133,7 @@ class FullEvalResult:
                 domain = result["domain"]
                 lang = result["lang"]
                 dataset = result["dataset"]
-                value = result["value"]
+                value = result["value"] * 100
                 if dataset == 'default':
                     benchmark_name = f"{domain}_{lang}"
                 else:

@@ -1,9 +1,10 @@
 # Your leaderboard name
-TITLE = """<h1 align="center" id="space-title">AIR-Bench</h1>"""
+TITLE = """<h1 align="center" id="space-title">AIR-Bench: Automated Heterogeneous Information Retrieval Benchmark
+ (Preview) </h1>"""
 
 # What does your leaderboard evaluate?
 INTRODUCTION_TEXT = """
-AIR-Bench: Automated Heterogeneous Information Retrieval Benchmark
+Check more information at [our GitHub repo](https://github.com/AIR-Bench/AIR-Bench)
 """
 
 # Which evaluations are you running? how can people reproduce what you have?
