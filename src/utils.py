@@ -9,7 +9,7 @@ import pandas as pd
 from src.benchmarks import BENCHMARK_COLS_QA, BENCHMARK_COLS_LONG_DOC, BenchmarksQA, BenchmarksLongDoc
 from src.display.formatting import styled_message, styled_error
 from src.display.utils import COLS_QA, TYPES_QA, COLS_LONG_DOC, TYPES_LONG_DOC, COL_NAME_RANK, COL_NAME_AVG, \
-    COL_NAME_RERANKING_MODEL, COL_NAME_RETRIEVAL_MODEL, COL_NAME_IS_ANONYMOUS, get_default_auto_eval_column_dict
+    COL_NAME_RERANKING_MODEL, COL_NAME_RETRIEVAL_MODEL, COL_NAME_IS_ANONYMOUS, COL_NAME_TIMESTAMP, COL_NAME_REVISION, get_default_auto_eval_column_dict
 from src.envs import API, SEARCH_RESULTS_REPO
 from src.read_evals import FullEvalResult, get_leaderboard_df, calculate_mean
 
@@ -130,14 +130,18 @@ def _update_table(
         reranking_query: list,
         query: str,
         show_anonymous: bool,
-        reset_ranking: bool = True
+        reset_ranking: bool = True,
+        show_revision_and_timestamp: bool = False
 ):
     filtered_df = hidden_df.copy()
     if not show_anonymous:
         filtered_df = filtered_df[~filtered_df[COL_NAME_IS_ANONYMOUS]]
     filtered_df = filter_models(filtered_df, reranking_query)
     filtered_df = filter_queries(query, filtered_df)
-    return select_columns(filtered_df, domains, langs, task, reset_ranking)
+    filtered_df = select_columns(filtered_df, domains, langs, task, reset_ranking)
+    if not show_revision_and_timestamp:
+        filtered_df.drop([COL_NAME_REVISION, COL_NAME_TIMESTAMP], axis=1, inplace=True)
+    return filtered_df
 
 
 def update_table(
@@ -147,10 +151,11 @@ def update_table(
         reranking_query: list,
         query: str,
         show_anonymous: bool,
-        reset_ranking: bool = True
+        reset_ranking: bool = True,
+        show_revision_and_timestamp: bool = False
 ):
     return _update_table(
-        "qa", hidden_df, domains, langs, reranking_query, query, show_anonymous, reset_ranking)
+        "qa", hidden_df, domains, langs, reranking_query, query, show_anonymous, reset_ranking, show_revision_and_timestamp)
 
 
 def update_table_long_doc(
@@ -160,10 +165,11 @@ def update_table_long_doc(
         reranking_query: list,
         query: str,
         show_anonymous: bool,
-        reset_ranking: bool = True
+        reset_ranking: bool = True,
+        show_revision_and_timestamp: bool = False
 ):
     return _update_table(
-        "long-doc", hidden_df, domains, langs, reranking_query, query, show_anonymous, reset_ranking)
+        "long-doc", hidden_df, domains, langs, reranking_query, query, show_anonymous, reset_ranking, show_revision_and_timestamp)
 
 
 def update_metric(
@@ -174,7 +180,8 @@ def update_metric(
         langs: list,
         reranking_model: list,
         query: str,
-        show_anonymous: bool = False
+        show_anonymous: bool = False,
+        show_revision_and_timestamp: bool = False,
 ) -> pd.DataFrame:
     if task == 'qa':
         leaderboard_df = get_leaderboard_df(raw_data, task=task, metric=metric)
@@ -184,7 +191,8 @@ def update_metric(
             langs,
             reranking_model,
             query,
-            show_anonymous
+            show_anonymous,
+            show_revision_and_timestamp
         )
     elif task == "long-doc":
         leaderboard_df = get_leaderboard_df(raw_data, task=task, metric=metric)
@@ -194,7 +202,8 @@ def update_metric(
             langs,
             reranking_model,
             query,
-            show_anonymous
+            show_anonymous,
+            show_revision_and_timestamp
         )
 
 

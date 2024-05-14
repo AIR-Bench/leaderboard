@@ -11,7 +11,7 @@ from src.about import (
 from src.benchmarks import DOMAIN_COLS_QA, LANG_COLS_QA, DOMAIN_COLS_LONG_DOC, LANG_COLS_LONG_DOC, METRIC_LIST, \
     DEFAULT_METRIC
 from src.display.css_html_js import custom_css
-from src.display.utils import COL_NAME_IS_ANONYMOUS
+from src.display.utils import COL_NAME_IS_ANONYMOUS, COL_NAME_REVISION, COL_NAME_TIMESTAMP
 from src.envs import API, EVAL_RESULTS_PATH, REPO_ID, RESULTS_REPO, TOKEN
 from src.read_evals import get_raw_eval_results, get_leaderboard_df
 from src.utils import update_table, update_metric, update_table_long_doc, upload_file, get_default_cols, submit_results
@@ -45,11 +45,13 @@ leaderboard_df_qa = original_df_qa.copy()
 shown_columns_qa, types_qa = get_default_cols(
     'qa', leaderboard_df_qa.columns, add_fix_cols=True)
 leaderboard_df_qa = leaderboard_df_qa[~leaderboard_df_qa[COL_NAME_IS_ANONYMOUS]][shown_columns_qa]
+leaderboard_df_qa.drop([COL_NAME_REVISION, COL_NAME_TIMESTAMP], axis=1, inplace=True)
 
 leaderboard_df_long_doc = original_df_long_doc.copy()
 shown_columns_long_doc, types_long_doc = get_default_cols(
     'long-doc', leaderboard_df_long_doc.columns, add_fix_cols=True)
 leaderboard_df_long_doc = leaderboard_df_long_doc[~leaderboard_df_long_doc[COL_NAME_IS_ANONYMOUS]][shown_columns_long_doc]
+leaderboard_df_long_doc.drop([COL_NAME_REVISION, COL_NAME_TIMESTAMP], axis=1, inplace=True)
 
 
 def update_metric_qa(
@@ -58,9 +60,10 @@ def update_metric_qa(
         langs: list,
         reranking_model: list,
         query: str,
-        show_anonymous: bool
+        show_anonymous: bool,
+        show_revision_and_timestamp,
 ):
-    return update_metric(raw_data, 'qa', metric, domains, langs, reranking_model, query, show_anonymous)
+    return update_metric(raw_data, 'qa', metric, domains, langs, reranking_model, query, show_anonymous, show_revision_and_timestamp)
 
 
 def update_metric_long_doc(
@@ -69,9 +72,10 @@ def update_metric_long_doc(
         langs: list,
         reranking_model: list,
         query: str,
-        show_anonymous: bool
+        show_anonymous: bool,
+        show_revision_and_timestamp,
 ):
-    return update_metric(raw_data, "long-doc", metric, domains, langs, reranking_model, query, show_anonymous)
+    return update_metric(raw_data, "long-doc", metric, domains, langs, reranking_model, query, show_anonymous, show_revision_and_timestamp)
 
 
 def update_table_without_ranking(
@@ -80,9 +84,10 @@ def update_table_without_ranking(
         langs,
         reranking_query,
         query,
-        show_anonymous
+        show_anonymous,
+        show_revision_and_timestamp,
 ):
-    return update_table(hidden_df, domains, langs, reranking_query, query, show_anonymous, reset_ranking=False)
+    return update_table(hidden_df, domains, langs, reranking_query, query, show_anonymous, reset_ranking=False, show_revision_and_timestamp=show_revision_and_timestamp)
 
 
 def update_table_without_ranking_long_doc(
@@ -91,9 +96,10 @@ def update_table_without_ranking_long_doc(
         langs,
         reranking_query,
         query,
-        show_anonymous
+        show_anonymous,
+        show_revision_and_timestamp,
 ):
-    return update_table_long_doc(hidden_df, domains, langs, reranking_query, query, show_anonymous, reset_ranking=False)
+    return update_table_long_doc(hidden_df, domains, langs, reranking_query, query, show_anonymous, reset_ranking=False, show_revision_and_timestamp=show_revision_and_timestamp)
 
 
 demo = gr.Blocks(css=custom_css)
@@ -157,6 +163,12 @@ with demo:
                             value=False,
                             info="The anonymous submissions might have invalid model information."
                         )
+                    with gr.Row():
+                        show_revision_and_timestamp = gr.Checkbox(
+                            label="Show submission details",
+                            value=False,
+                            info="Show the revision and timestamp information of submissions"
+                        )
 
             leaderboard_table = gr.components.Dataframe(
                 value=leaderboard_df_qa,
@@ -187,18 +199,21 @@ with demo:
                 leaderboard_table,
             )
 
-            selected_rerankings.change(
-                update_table_without_ranking,
-                [
-                    hidden_leaderboard_table_for_search,
-                    selected_domains,
-                    selected_langs,
-                    selected_rerankings,
-                    search_bar,
-                    show_anonymous,
-                ],
-                leaderboard_table,
-            )
+            for selector in [show_revision_and_timestamp, selected_rerankings]:
+                selector.change(
+                    update_table_without_ranking,
+                    [
+                        hidden_leaderboard_table_for_search,
+                        selected_domains,
+                        selected_langs,
+                        selected_rerankings,
+                        search_bar,
+                        show_anonymous,
+                        show_revision_and_timestamp
+                    ],
+                    leaderboard_table,
+                    queue=True
+                )
 
             # Set column-wise listener
             for selector in [
@@ -288,6 +303,12 @@ with demo:
                             value=False,
                             info="The anonymous submissions might have invalid model information."
                         )
+                    with gr.Row():
+                        show_revision_and_timestamp = gr.Checkbox(
+                            label="Show submission details",
+                            value=False,
+                            info="Show the revision and timestamp information of submissions"
+                        )
 
             leaderboard_table_long_doc = gr.components.Dataframe(
                 value=leaderboard_df_long_doc,
@@ -314,22 +335,26 @@ with demo:
                     selected_rerankings,
                     search_bar,
                     show_anonymous,
+                    show_revision_and_timestamp
                 ],
                 leaderboard_table_long_doc,
             )
 
-            selected_rerankings.change(
-                update_table_without_ranking_long_doc,
-                [
-                    hidden_leaderboard_table_for_search,
-                    selected_domains,
-                    selected_langs,
-                    selected_rerankings,
-                    search_bar,
-                    show_anonymous,
-                ],
-                leaderboard_table_long_doc,
-            )
+            for selector in [show_revision_and_timestamp, selected_rerankings]:
+                selector.change(
+                    update_table_without_ranking_long_doc,
+                    [
+                        hidden_leaderboard_table_for_search,
+                        selected_domains,
+                        selected_langs,
+                        selected_rerankings,
+                        search_bar,
+                        show_anonymous,
+                        show_revision_and_timestamp
+                    ],
+                    leaderboard_table_long_doc,
+                    queue=True,
+                )
 
             # Set column-wise listener
             for selector in [
@@ -344,6 +369,7 @@ with demo:
                         selected_rerankings,
                         search_bar,
                         show_anonymous,
+                        show_revision_and_timestamp
                     ],
                     leaderboard_table_long_doc,
                     queue=True,
@@ -359,6 +385,7 @@ with demo:
                     selected_rerankings,
                     search_bar,
                     show_anonymous,
+                    show_revision_and_timestamp
                 ],
                 leaderboard_table_long_doc,
                 queue=True
