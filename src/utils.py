@@ -18,7 +18,8 @@ def filter_models(df: pd.DataFrame, reranking_query: list) -> pd.DataFrame:
     return df.loc[df["Reranking Model"].isin(reranking_query)]
 
 
-def filter_queries(query: str, filtered_df: pd.DataFrame) -> pd.DataFrame:
+def filter_queries(query: str, df: pd.DataFrame) -> pd.DataFrame:
+    filtered_df = df.copy()
     final_df = []
     if query != "":
         queries = [q.strip() for q in query.split(";")]
@@ -36,7 +37,6 @@ def filter_queries(query: str, filtered_df: pd.DataFrame) -> pd.DataFrame:
                     COL_NAME_RERANKING_MODEL,
                 ]
             )
-
     return filtered_df
 
 
@@ -117,6 +117,7 @@ def update_table(
 ):
     filtered_df = hidden_df
     if not show_anonymous:
+        filtered_df = hidden_df.copy()
         filtered_df = filtered_df[~filtered_df[COL_NAME_IS_ANONYMOUS]]
     filtered_df = filter_models(filtered_df, reranking_query)
     filtered_df = filter_queries(query, filtered_df)
