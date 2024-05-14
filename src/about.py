@@ -19,20 +19,15 @@ EVALUATION_QUEUE_TEXT = """
 
 1. Install AIR-Bench
 ```bash
-# Clone the repo
-git clone https://github.com/AIR-Bench/AIR-Bench.git
-
-# Install the package
-cd AIR-Bench
-pip install .
+pip install air-benchmark
 ```
 2. Run the evaluation script
 ```bash
 cd AIR-Bench/scripts
 # Run all tasks
-python run_AIR-Bench.py \\
+python run_air_benchmark.py \\
 --output_dir ./search_results \\
---encoder BAAI/bge-m3 \
+--encoder BAAI/bge-m3 \\
 --reranker BAAI/bge-reranker-v2-m3 \\
 --search_top_k 1000 \\
 --rerank_top_k 100 \\
@@ -46,7 +41,7 @@ python run_AIR-Bench.py \\
 --overwrite False
 
 # Run the tasks in the specified task type
-python run_AIR-Bench.py \\
+python run_air_benchmark.py \\
 --task_types long-doc \\
 --output_dir ./search_results \\
 --encoder BAAI/bge-m3 \\
@@ -63,7 +58,7 @@ python run_AIR-Bench.py \\
 --overwrite False
 
 # Run the tasks in the specified task type and domains
-python run_AIR-Bench.py \\
+python run_air_benchmark.py \\
 --task_types long-doc \\
 --domains arxiv book \\
 --output_dir ./search_results \\
@@ -81,7 +76,7 @@ python run_AIR-Bench.py \\
 --overwrite False
 
 # Run the tasks in the specified languages
-python run_AIR-Bench.py \\
+python run_air_benchmark.py \\
 --languages en \\
 --output_dir ./search_results \\
 --encoder BAAI/bge-m3 \\
@@ -98,15 +93,13 @@ python run_AIR-Bench.py \\
 --overwrite False
 
 # Run the tasks in the specified task type, domains, and languages
-python run_AIR-Bench.py \\
+python run_air_benchmark.py \\
 --task_types qa \\
 --domains wiki web \\
 --languages en \\
 --output_dir ./search_results \\
 --encoder BAAI/bge-m3 \\
---encoder_link https://huggingface.co/BAAI/bge-m3 \\
 --reranker BAAI/bge-reranker-v2-m3 \\
---reranker_link https://huggingface.co/BAAI/bge-reranker-v2-m3 \\
 --search_top_k 1000 \\
 --rerank_top_k 100 \\
 --max_query_length 512 \\
