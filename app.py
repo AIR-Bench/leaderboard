@@ -74,6 +74,28 @@ def update_metric_long_doc(
     return update_metric(raw_data, "long-doc", metric, domains, langs, reranking_model, query, show_anonymous)
 
 
+def update_table_without_ranking(
+        hidden_df,
+        domains,
+        langs,
+        reranking_query,
+        query,
+        show_anonymous
+):
+    return update_table(hidden_df, domains, langs, reranking_query, query, show_anonymous, reset_ranking=False)
+
+
+def update_table_without_ranking_long_doc(
+        hidden_df,
+        domains,
+        langs,
+        reranking_query,
+        query,
+        show_anonymous
+):
+    return update_table_long_doc(hidden_df, domains, langs, reranking_query, query, show_anonymous, reset_ranking=False)
+
+
 demo = gr.Blocks(css=custom_css)
 with demo:
     gr.HTML(TITLE)
@@ -153,7 +175,20 @@ with demo:
 
             # Set search_bar listener
             search_bar.submit(
-                update_table,
+                update_table_without_ranking,
+                [
+                    hidden_leaderboard_table_for_search,
+                    selected_domains,
+                    selected_langs,
+                    selected_rerankings,
+                    search_bar,
+                    show_anonymous,
+                ],
+                leaderboard_table,
+            )
+
+            selected_rerankings.change(
+                update_table_without_ranking,
                 [
                     hidden_leaderboard_table_for_search,
                     selected_domains,
@@ -167,7 +202,7 @@ with demo:
 
             # Set column-wise listener
             for selector in [
-                selected_domains, selected_langs, selected_rerankings, show_anonymous
+                selected_domains, selected_langs, show_anonymous
             ]:
                 selector.change(
                     update_table,
@@ -271,7 +306,20 @@ with demo:
 
             # Set search_bar listener
             search_bar.submit(
-                update_table_long_doc,
+                update_table_without_ranking_long_doc,
+                [
+                    hidden_leaderboard_table_for_search,
+                    selected_domains,
+                    selected_langs,
+                    selected_rerankings,
+                    search_bar,
+                    show_anonymous,
+                ],
+                leaderboard_table_long_doc,
+            )
+
+            selected_rerankings.change(
+                update_table_without_ranking_long_doc,
                 [
                     hidden_leaderboard_table_for_search,
                     selected_domains,
@@ -285,7 +333,7 @@ with demo:
 
             # Set column-wise listener
             for selector in [
-                selected_domains, selected_langs, selected_rerankings, show_anonymous
+                selected_domains, selected_langs, show_anonymous
             ]:
                 selector.change(
                     update_table_long_doc,

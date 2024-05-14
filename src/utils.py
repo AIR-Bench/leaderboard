@@ -92,7 +92,13 @@ FIXED_COLS = [c.name for _, _, c in fixed_cols]
 FIXED_COLS_TYPES = [c.type for _, _, c in fixed_cols]
 
 
-def select_columns(df: pd.DataFrame, domain_query: list, language_query: list, task: str = "qa") -> pd.DataFrame:
+def select_columns(
+        df: pd.DataFrame,
+        domain_query: list,
+        language_query: list,
+        task: str = "qa",
+        reset_ranking: bool = True
+) -> pd.DataFrame:
     cols, _ = get_default_cols(task=task, columns=df.columns, add_fix_cols=False)
     selected_cols = []
     for c in cols:
@@ -110,9 +116,28 @@ def select_columns(df: pd.DataFrame, domain_query: list, language_query: list, t
     filtered_df[COL_NAME_AVG] = filtered_df[selected_cols].apply(calculate_mean, axis=1).round(decimals=2)
     filtered_df.sort_values(by=[COL_NAME_AVG], ascending=False, inplace=True)
     filtered_df.reset_index(inplace=True, drop=True)
-    filtered_df[COL_NAME_RANK] = filtered_df[COL_NAME_AVG].rank(ascending=False, method="min")
+    if reset_ranking:
+        filtered_df[COL_NAME_RANK] = filtered_df[COL_NAME_AVG].rank(ascending=False, method="min")
 
     return filtered_df
+
+
+def _update_table(
+        task: str,
+        hidden_df: pd.DataFrame,
+        domains: list,
+        langs: list,
+        reranking_query: list,
+        query: str,
+        show_anonymous: bool,
+        reset_ranking: bool = True
+):
+    filtered_df = hidden_df.copy()
+    if not show_anonymous:
+        filtered_df = filtered_df[~filtered_df[COL_NAME_IS_ANONYMOUS]]
+    filtered_df = filter_models(filtered_df, reranking_query)
+    filtered_df = filter_queries(query, filtered_df)
+    return select_columns(filtered_df, domains, langs, task, reset_ranking)
 
 
 def update_table(
@@ -121,14 +146,11 @@ def update_table(
         langs: list,
         reranking_query: list,
         query: str,
-        show_anonymous: bool
+        show_anonymous: bool,
+        reset_ranking: bool = True
 ):
-    filtered_df = hidden_df.copy()
-    if not show_anonymous:
-        filtered_df = filtered_df[~filtered_df[COL_NAME_IS_ANONYMOUS]]
-    filtered_df = filter_models(filtered_df, reranking_query)
-    filtered_df = filter_queries(query, filtered_df)
-    return select_columns(filtered_df, domains, langs, task='qa')
+    return _update_table(
+        "qa", hidden_df, domains, langs, reranking_query, query, show_anonymous, reset_ranking)
 
 
 def update_table_long_doc(
@@ -137,15 +159,11 @@ def update_table_long_doc(
         langs: list,
         reranking_query: list,
         query: str,
-        show_anonymous: bool
+        show_anonymous: bool,
+        reset_ranking: bool = True
 ):
-    filtered_df = hidden_df
-    if not show_anonymous:
-        filtered_df = filtered_df[~filtered_df[COL_NAME_IS_ANONYMOUS]]
-    filtered_df = filter_models(filtered_df, reranking_query)
-    filtered_df = filter_queries(query, filtered_df)
-    df = select_columns(filtered_df, domains, langs, task='long-doc')
-    return df
+    return _update_table(
+        "long-doc", hidden_df, domains, langs, reranking_query, query, show_anonymous, reset_ranking)
 
 
 def update_metric(
