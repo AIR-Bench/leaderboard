@@ -7,7 +7,6 @@ from typing import List
 import pandas as pd
 
 from src.benchmarks import get_safe_name
-from src.display.formatting import has_no_nan_values
 from src.display.utils import (
     COL_NAME_RERANKING_MODEL,
     COL_NAME_RETRIEVAL_MODEL,
@@ -25,6 +24,13 @@ from src.display.utils import (
 )
 
 from src.display.formatting import make_clickable_model
+
+
+def calculate_mean(row):
+    if pd.isna(row).any():
+        return 0
+    else:
+        return row.mean()
 
 
 @dataclass
@@ -203,7 +209,7 @@ def get_leaderboard_df(raw_data: List[FullEvalResult], task: str, metric: str) -
     _benchmark_cols = frozenset(benchmark_cols).intersection(frozenset(df.columns.to_list()))
 
     # calculate the average score for selected benchmarks
-    df[COL_NAME_AVG] = df[list(_benchmark_cols)].mean(axis=1).round(decimals=2)
+    df[COL_NAME_AVG] = df[list(_benchmark_cols)].apply(calculate_mean, axis=1).round(decimals=2)
     df.sort_values(by=[COL_NAME_AVG], ascending=False, inplace=True)
     df.reset_index(inplace=True, drop=True)
 
