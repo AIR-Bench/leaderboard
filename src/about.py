@@ -121,16 +121,16 @@ python run_AIR-Bench.py \\
 3. Package the search results.
 ```bash
 # Zip "Embedding Model + NoReranker" search results in "<search_results>/<model_name>/NoReranker" to "<save_dir>/<model_name>_NoReranker.zip".
-python zip_results.py \
---results_dir search_results \
---model_name bge-m3 \
+python zip_results.py \\
+--results_dir search_results \\
+--model_name bge-m3 \\
 --save_dir search_results/zipped_results
 
 # Zip "Embedding Model + Reranker" search results in "<search_results>/<model_name>/<reranker_name>" to "<save_dir>/<model_name>_<reranker_name>.zip".
-python zip_results.py \
---results_path search_results \
---model_name bge-m3 \
---reranker_name bge-reranker-v2-m3 \
+python zip_results.py \\
+--results_path search_results \\
+--model_name bge-m3 \\
+--reranker_name bge-reranker-v2-m3 \\
 --save_dir search_results/zipped_results
 ```
 4. Upload the `.zip` file on this page and fill in the model information: 
@@ -140,6 +140,7 @@ python zip_results.py \
 - Reranker URL: such as `https://huggingface.co/BAAI/bge-reranker-v2-m3`. Keep empty for `NoReranker`.
 
 If you want to stay anonymous, you can only fill in the Model Name and Reranker Name (keep empty for `NoReranker`), and check the selection box below befor submission. 
+
 5. Congratulation! Your results will be shown on the leaderboard in up to one hour.
 """
 
