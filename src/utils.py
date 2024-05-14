@@ -13,9 +13,17 @@ from src.display.utils import COLS_QA, TYPES_QA, COLS_LONG_DOC, TYPES_LONG_DOC, 
 from src.envs import API, SEARCH_RESULTS_REPO
 from src.read_evals import FullEvalResult, get_leaderboard_df, calculate_mean
 
+import re
+
+
+def remove_html(input_str):
+    # Regular expression for finding HTML tags
+    clean = re.sub(r'<.*?>', '', input_str)
+    return clean
+
 
 def filter_models(df: pd.DataFrame, reranking_query: list) -> pd.DataFrame:
-    return df.loc[df["Reranking Model"].isin(reranking_query)]
+    return df.loc[df[COL_NAME_RERANKING_MODEL].apply(remove_html).isin(reranking_query)]
 
 
 def filter_queries(query: str, df: pd.DataFrame) -> pd.DataFrame:
@@ -99,7 +107,6 @@ def select_columns(df: pd.DataFrame, domain_query: list, language_query: list, t
         selected_cols.append(c)
     # We use COLS to maintain sorting
     filtered_df = df[FIXED_COLS + selected_cols]
-    filtered_df[COL_NAME_AVG] = filtered_df[selected_cols].mean(axis=1, numeric_only=True).round(decimals=2)
     filtered_df[COL_NAME_AVG] = filtered_df[selected_cols].apply(calculate_mean, axis=1).round(decimals=2)
     filtered_df.sort_values(by=[COL_NAME_AVG], ascending=False, inplace=True)
     filtered_df.reset_index(inplace=True, drop=True)
@@ -116,14 +123,12 @@ def update_table(
         query: str,
         show_anonymous: bool
 ):
-    filtered_df = hidden_df
+    filtered_df = hidden_df.copy()
     if not show_anonymous:
-        filtered_df = hidden_df.copy()
         filtered_df = filtered_df[~filtered_df[COL_NAME_IS_ANONYMOUS]]
     filtered_df = filter_models(filtered_df, reranking_query)
     filtered_df = filter_queries(query, filtered_df)
-    df = select_columns(filtered_df, domains, langs, task='qa')
-    return df
+    return select_columns(filtered_df, domains, langs, task='qa')
 
 
 def update_table_long_doc(
