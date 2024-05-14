@@ -39,6 +39,8 @@ dataset_dict = {
         },
         "arxiv": {
             "en": ["Arxiv", ]},
+        "msmarco": {
+            "en": ["MS MARCO", ]},
     },
     "long-doc": {
         "arxiv": {
