@@ -30,109 +30,116 @@ pip install .
 ```bash
 cd AIR-Bench/scripts
 # Run all tasks
-python run_AIR-Bench.py \
---output_dir ./search_results \
+python run_AIR-Bench.py \\
+--output_dir ./search_results \\
 --encoder BAAI/bge-m3 \
---encoder_link https://huggingface.co/BAAI/bge-m3 \
---reranker BAAI/bge-reranker-v2-m3 \
---reranker_link https://huggingface.co/BAAI/bge-reranker-v2-m3 \
---search_top_k 1000 \
---rerank_top_k 100 \
---max_query_length 512 \
---max_passage_length 512 \
---batch_size 512 \
---pooling_method cls \
---normalize_embeddings True \
---use_fp16 True \
---add_instruction False \
+--reranker BAAI/bge-reranker-v2-m3 \\
+--search_top_k 1000 \\
+--rerank_top_k 100 \\
+--max_query_length 512 \\
+--max_passage_length 512 \\
+--batch_size 512 \\
+--pooling_method cls \\
+--normalize_embeddings True \\
+--use_fp16 True \\
+--add_instruction False \\
 --overwrite False
 
 # Run the tasks in the specified task type
-python run_AIR-Bench.py \
---task_types long-doc \
---output_dir ./search_results \
---encoder BAAI/bge-m3 \
---encoder_link https://huggingface.co/BAAI/bge-m3 \
---reranker BAAI/bge-reranker-v2-m3 \
---reranker_link https://huggingface.co/BAAI/bge-reranker-v2-m3 \
---search_top_k 1000 \
---rerank_top_k 100 \
---max_query_length 512 \
---max_passage_length 512 \
---batch_size 512 \
---pooling_method cls \
---normalize_embeddings True \
---use_fp16 True \
---add_instruction False \
+python run_AIR-Bench.py \\
+--task_types long-doc \\
+--output_dir ./search_results \\
+--encoder BAAI/bge-m3 \\
+--reranker BAAI/bge-reranker-v2-m3 \\
+--search_top_k 1000 \\
+--rerank_top_k 100 \\
+--max_query_length 512 \\
+--max_passage_length 512 \\
+--batch_size 512 \\
+--pooling_method cls \\
+--normalize_embeddings True \\
+--use_fp16 True \\
+--add_instruction False \\
 --overwrite False
 
 # Run the tasks in the specified task type and domains
-python run_AIR-Bench.py \
---task_types long-doc \
---domains arxiv book \
---output_dir ./search_results \
---encoder BAAI/bge-m3 \
---encoder_link https://huggingface.co/BAAI/bge-m3 \
---reranker BAAI/bge-reranker-v2-m3 \
---reranker_link https://huggingface.co/BAAI/bge-reranker-v2-m3 \
---search_top_k 1000 \
---rerank_top_k 100 \
---max_query_length 512 \
---max_passage_length 512 \
---batch_size 512 \
---pooling_method cls \
---normalize_embeddings True \
---use_fp16 True \
---add_instruction False \
+python run_AIR-Bench.py \\
+--task_types long-doc \\
+--domains arxiv book \\
+--output_dir ./search_results \\
+--encoder BAAI/bge-m3 \\
+--reranker BAAI/bge-reranker-v2-m3 \\
+--search_top_k 1000 \\
+--rerank_top_k 100 \\
+--max_query_length 512 \\
+--max_passage_length 512 \\
+--batch_size 512 \\
+--pooling_method cls \\
+--normalize_embeddings True \\
+--use_fp16 True \\
+--add_instruction False \\
 --overwrite False
 
 # Run the tasks in the specified languages
-python run_AIR-Bench.py \
---languages en \
---output_dir ./search_results \
---encoder BAAI/bge-m3 \
---encoder_link https://huggingface.co/BAAI/bge-m3 \
---reranker BAAI/bge-reranker-v2-m3 \
---reranker_link https://huggingface.co/BAAI/bge-reranker-v2-m3 \
---search_top_k 1000 \
---rerank_top_k 100 \
---max_query_length 512 \
---max_passage_length 512 \
---batch_size 512 \
---pooling_method cls \
---normalize_embeddings True \
---use_fp16 True \
---add_instruction False \
+python run_AIR-Bench.py \\
+--languages en \\
+--output_dir ./search_results \\
+--encoder BAAI/bge-m3 \\
+--reranker BAAI/bge-reranker-v2-m3 \\
+--search_top_k 1000 \\
+--rerank_top_k 100 \\
+--max_query_length 512 \\
+--max_passage_length 512 \\
+--batch_size 512 \\
+--pooling_method cls \\
+--normalize_embeddings True \\
+--use_fp16 True \\
+--add_instruction False \\
 --overwrite False
 
 # Run the tasks in the specified task type, domains, and languages
-python run_AIR-Bench.py \
---task_types qa \
---domains wiki web \
---languages en \
---output_dir ./search_results \
---encoder BAAI/bge-m3 \
---encoder_link https://huggingface.co/BAAI/bge-m3 \
---reranker BAAI/bge-reranker-v2-m3 \
---reranker_link https://huggingface.co/BAAI/bge-reranker-v2-m3 \
---search_top_k 1000 \
---rerank_top_k 100 \
---max_query_length 512 \
---max_passage_length 512 \
---batch_size 512 \
---pooling_method cls \
---normalize_embeddings True \
---use_fp16 True \
---add_instruction False \
+python run_AIR-Bench.py \\
+--task_types qa \\
+--domains wiki web \\
+--languages en \\
+--output_dir ./search_results \\
+--encoder BAAI/bge-m3 \\
+--encoder_link https://huggingface.co/BAAI/bge-m3 \\
+--reranker BAAI/bge-reranker-v2-m3 \\
+--reranker_link https://huggingface.co/BAAI/bge-reranker-v2-m3 \\
+--search_top_k 1000 \\
+--rerank_top_k 100 \\
+--max_query_length 512 \\
+--max_passage_length 512 \\
+--batch_size 512 \\
+--pooling_method cls \\
+--normalize_embeddings True \\
+--use_fp16 True \\
+--add_instruction False \\
 --overwrite False
 ```
 3. Package the search results.
 ```bash
+# Zip "Embedding Model + NoReranker" search results in "<search_results>/<model_name>/NoReranker" to "<save_dir>/<model_name>_NoReranker.zip".
 python zip_results.py \
---results_path search_results/bge-m3 \
---save_path search_results/zipped_results
+--results_dir search_results \
+--model_name bge-m3 \
+--save_dir search_results/zipped_results
+
+# Zip "Embedding Model + Reranker" search results in "<search_results>/<model_name>/<reranker_name>" to "<save_dir>/<model_name>_<reranker_name>.zip".
+python zip_results.py \
+--results_path search_results \
+--model_name bge-m3 \
+--reranker_name bge-reranker-v2-m3 \
+--save_dir search_results/zipped_results
 ```
-4. Upload the `.zip` file on this page and fill in the model information. 
+4. Upload the `.zip` file on this page and fill in the model information: 
+- Model Name: such as `bge-m3`.
+- Model URL: such as `https://huggingface.co/BAAI/bge-m3`.
+- Reranker Name: such as `bge-reranker-v2-m3`. Keep empty for `NoReranker`.
+- Reranker URL: such as `https://huggingface.co/BAAI/bge-reranker-v2-m3`. Keep empty for `NoReranker`.
+
+If you want to stay anonymous, you can only fill in the Model Name and Reranker Name (keep empty for `NoReranker`), and check the selection box below befor submission. 
 5. Congratulation! Your results will be shown on the leaderboard in up to one hour.
 """
 
