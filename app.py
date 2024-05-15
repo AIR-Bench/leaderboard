@@ -114,6 +114,13 @@ with demo:
                 with gr.Column():
                     # search retrieval models
                     with gr.Row():
+                        selected_version = gr.Dropdown(
+                            choices=["AIR-Bench_24.04",],
+                            value="AIR-Bench_24.04",
+                            label="Select the version of AIR-Bench",
+                            interactive = True
+                        )
+                    with gr.Row():
                         search_bar = gr.Textbox(
                             placeholder=" 🔍 Search for retrieval models (separate multiple queries with `;`) and press ENTER...",
                             show_label=False,
@@ -263,6 +270,13 @@ with demo:
         with gr.TabItem("Long Doc", elem_id="long-doc-benchmark-tab-table", id=1):
             with gr.Row():
                 with gr.Column():
+                    with gr.Row():
+                        selected_version = gr.Dropdown(
+                            choices=["AIR-Bench_24.04",],
+                            value="AIR-Bench_24.04",
+                            label="Select the version of AIR-Bench",
+                            interactive=True
+                        )
                     with gr.Row():
                         search_bar = gr.Textbox(
                             info="Search the retrieval models",
