@@ -399,13 +399,23 @@ with demo:
                     gr.Markdown("## ✉️Submit your model here!", elem_classes="markdown-text")
                 with gr.Row():
                     with gr.Column():
-                        model_name = gr.Textbox(label="Model name")
+                        model_name = gr.Textbox(label="Retrieval Model name")
                     with gr.Column():
-                        model_url = gr.Textbox(label="Model URL")
+                        model_url = gr.Textbox(label="Retrieval Model URL")
+                with gr.Row():
                     with gr.Column():
-                        reranker_name = gr.Textbox(label="Reranker name")
+                        reranking_model_name = gr.Textbox(
+                            label="Reranking Model name",
+                            info="Optional",
+                            value="NoReranker"
+                        )
                     with gr.Column():
-                        reranker_url = gr.Textbox(label="Reranker URL")
+                        reranking_model_url = gr.Textbox(
+                            label="Reranking Model URL",
+                            info="Optional",
+                            value=""
+                        )
+                with gr.Row():
                     with gr.Column():
                         benchmark_version = gr.Dropdown(
                             ["AIR-Bench_24.04", ],
@@ -437,8 +447,8 @@ with demo:
                         file_output,
                         model_name,
                         model_url,
-                        reranker_name,
-                        reranker_url,
+                        reranking_model_name,
+                        reranking_model_url,
                         benchmark_version,
                         is_anonymous
                     ],

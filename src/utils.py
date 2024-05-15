@@ -244,7 +244,14 @@ def calculate_file_md5(file_path):
     return md5.hexdigest()
 
 
-def submit_results(filepath: str, model: str, model_url: str, reranker: str, reranker_url: str, version: str = "AIR-Bench_24.04", is_anonymous=False):
+def submit_results(
+        filepath: str,
+        model: str,
+        model_url: str,
+        reranking_model: str="",
+        reranking_model_url: str="",
+        version: str="AIR-Bench_24.04",
+        is_anonymous=False):
     if not filepath.endswith(".zip"):
         return styled_error(f"file uploading aborted. wrong file type: {filepath}")
 
@@ -266,6 +273,18 @@ def submit_results(filepath: str, model: str, model_url: str, reranker: str, rer
             except EntryNotFoundError as e:
                 return styled_error(
                     f"failed to submit. Model url must be a link to a valid HuggingFace model on HuggingFace space. Could not get model {repo_id}")
+        if reranking_model != "NoReranker":
+            if not reranking_model_url.startswith("https://") and not reranking_model_url.startswith("http://"):
+                return styled_error(
+                    f"failed to submit. Model url must start with `https://` or `http://`. Illegal model url: {model_url}")
+            if reranking_model_url.startswith("https://huggingface.co/"):
+                # validate model card
+                repo_id = reranking_model_url.removeprefix("https://huggingface.co/")
+                try:
+                    card = ModelCard.load(repo_id)
+                except EntryNotFoundError as e:
+                    return styled_error(
+                        f"failed to submit. Model url must be a link to a valid HuggingFace model on HuggingFace space. Could not get model {repo_id}")
 
     # rename the uploaded file
     input_fp = Path(filepath)
@@ -274,12 +293,12 @@ def submit_results(filepath: str, model: str, model_url: str, reranker: str, rer
     output_fn = f"{timestamp_fn}-{revision}.zip"
     input_folder_path = input_fp.parent
 
-    if not reranker:
-        reranker = 'NoReranker'
+    if not reranking_model:
+        reranking_model = 'NoReranker'
     
     API.upload_file(
         path_or_fileobj=filepath,
-        path_in_repo=f"{version}/{model}/{reranker}/{output_fn}",
+        path_in_repo=f"{version}/{model}/{reranking_model}/{output_fn}",
         repo_id=SEARCH_RESULTS_REPO,
         repo_type="dataset",
         commit_message=f"feat: submit {model} to evaluate")
@@ -288,8 +307,8 @@ def submit_results(filepath: str, model: str, model_url: str, reranker: str, rer
     output_config = {
         "model_name": f"{model}",
         "model_url": f"{model_url}",
-        "reranker_name": f"{reranker}",
-        "reranker_url": f"{reranker_url}",
+        "reranker_name": f"{reranking_model}",
+        "reranker_url": f"{reranking_model_url}",
         "version": f"{version}",
         "is_anonymous": is_anonymous,
         "revision": f"{revision}",
@@ -299,10 +318,10 @@ def submit_results(filepath: str, model: str, model_url: str, reranker: str, rer
         json.dump(output_config, f, indent=4, ensure_ascii=False)
     API.upload_file(
         path_or_fileobj=input_folder_path / output_config_fn,
-        path_in_repo=f"{version}/{model}/{reranker}/{output_config_fn}",
+        path_in_repo=f"{version}/{model}/{reranking_model}/{output_config_fn}",
         repo_id=SEARCH_RESULTS_REPO,
         repo_type="dataset",
-        commit_message=f"feat: submit {model} + {reranker} config")
+        commit_message=f"feat: submit {model} + {reranking_model} config")
     return styled_message(
         f"Thanks for submission!\nSubmission revision: {revision}"
     )
