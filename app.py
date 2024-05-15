@@ -14,11 +14,12 @@ from src.display.css_html_js import custom_css
 from src.display.utils import COL_NAME_IS_ANONYMOUS, COL_NAME_REVISION, COL_NAME_TIMESTAMP
 from src.envs import API, EVAL_RESULTS_PATH, REPO_ID, RESULTS_REPO, TOKEN
 from src.read_evals import get_raw_eval_results, get_leaderboard_df
-from src.utils import update_table, update_metric, update_table_long_doc, upload_file, get_default_cols, submit_results
+from src.utils import update_table, update_metric, update_table_long_doc, upload_file, get_default_cols, submit_results, clear_reranking_selections
 
 
 def restart_space():
     API.restart_space(repo_id=REPO_ID)
+
 
 
 try:
@@ -129,6 +130,12 @@ with demo:
                             elem_id="reranking-select",
                             interactive=True
                         )
+                    with gr.Row():
+                        select_noreranker_only_btn = gr.ClearButton(
+                            selected_rerankings,
+                            value="Only show results without ranking models",
+                        )
+
                 with gr.Column(min_width=320):
                     # select the metric
                     selected_metric = gr.Dropdown(
@@ -248,6 +255,11 @@ with demo:
                 queue=True
             )
 
+            select_noreranker_only_btn.click(
+                clear_reranking_selections,
+                outputs=selected_rerankings
+            )
+
         with gr.TabItem("Long Doc", elem_id="long-doc-benchmark-tab-table", id=1):
             with gr.Row():
                 with gr.Column():
@@ -267,6 +279,11 @@ with demo:
                             label="Select the reranking models",
                             elem_id="reranking-select-long-doc",
                             interactive=True
+                        )
+                    with gr.Row():
+                        select_noreranker_only_btn = gr.ClearButton(
+                            selected_rerankings,
+                            value="Only show results without ranking models",
                         )
                 with gr.Column(min_width=320):
                     # select the metric
@@ -389,6 +406,11 @@ with demo:
                 ],
                 leaderboard_table_long_doc,
                 queue=True
+            )
+
+            select_noreranker_only_btn.click(
+                clear_reranking_selections,
+                outputs=selected_rerankings
             )
 
         with gr.TabItem("🚀Submit here!", elem_id="submit-tab-table", id=2):

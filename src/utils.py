@@ -325,3 +325,7 @@ def submit_results(
     return styled_message(
         f"Thanks for submission!\nSubmission revision: {revision}"
     )
+
+
+def clear_reranking_selections():
+    return ["NoReranker",]
