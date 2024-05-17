@@ -113,10 +113,10 @@ def select_columns(
         selected_cols.append(c)
     # We use COLS to maintain sorting
     filtered_df = df[FIXED_COLS + selected_cols]
-    filtered_df[COL_NAME_AVG] = filtered_df[selected_cols].apply(calculate_mean, axis=1).round(decimals=2)
-    filtered_df.sort_values(by=[COL_NAME_AVG], ascending=False, inplace=True)
-    filtered_df.reset_index(inplace=True, drop=True)
     if reset_ranking:
+        filtered_df[COL_NAME_AVG] = filtered_df[selected_cols].apply(calculate_mean, axis=1).round(decimals=2)
+        filtered_df.sort_values(by=[COL_NAME_AVG], ascending=False, inplace=True)
+        filtered_df.reset_index(inplace=True, drop=True)
         filtered_df[COL_NAME_RANK] = filtered_df[COL_NAME_AVG].rank(ascending=False, method="min")
 
     return filtered_df
