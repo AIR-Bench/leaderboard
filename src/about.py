@@ -4,137 +4,25 @@ TITLE = """<h1 align="center" id="space-title">AIR-Bench: Automated Heterogeneou
 
 # What does your leaderboard evaluate?
 INTRODUCTION_TEXT = """
-Check more information at [our GitHub repo](https://github.com/AIR-Bench/AIR-Bench)
+## Check more information at [our GitHub repo](https://github.com/AIR-Bench/AIR-Bench)
 """
 
 # Which evaluations are you running? how can people reproduce what you have?
 BENCHMARKS_TEXT = f"""
-## How it works
+## How the test data are generated?
+### Find more information at [our GitHub repo](https://github.com/AIR-Bench/AIR-Bench/blob/main/docs/data_generation.md)
 
-Check more information at [our GitHub repo](https://github.com/AIR-Bench/AIR-Bench)
+## FAQ
+- Q: Will you release a new version of datasets regularly? How often will AIR-Bench release a new version?
+  - A: Yes, we plan to release new datasets on regular basis. However, the update frequency is to be decided.  
+
+- Q: As you are using models to do the quality control when generating the data, is it biased to the models that are used?
+  - A: Yes, the results is biased to the chosen models. However, we believe the datasets labeled by human are also biased to the human's preference. The key point to verify is whether the model's bias is consistent with the human's. We use our approach to generate test data using the well established MSMARCO datasets. We benchmark different models' performances using the generated dataset and the human-label DEV dataset. Comparing the ranking of different models on these two datasets, we observe the spearman correlation between them is 0.8211 (p-value=5e-5). This indicates that the models' perference is well aligned with the human. Please refer to [here](https://github.com/AIR-Bench/AIR-Bench/blob/main/docs/available_evaluation_results.md#consistency-with-ms-marco) for details
+
 """
 
 EVALUATION_QUEUE_TEXT = """
-## Steps for submit to AIR-Bench
-
-1. Install AIR-Bench
-```bash
-pip install air-benchmark
-```
-2. Run the evaluation script
-```bash
-cd AIR-Bench/scripts
-# Run all tasks
-python run_air_benchmark.py \\
---output_dir ./search_results \\
---encoder BAAI/bge-m3 \\
---reranker BAAI/bge-reranker-v2-m3 \\
---search_top_k 1000 \\
---rerank_top_k 100 \\
---max_query_length 512 \\
---max_passage_length 512 \\
---batch_size 512 \\
---pooling_method cls \\
---normalize_embeddings True \\
---use_fp16 True \\
---add_instruction False \\
---overwrite False
-
-# Run the tasks in the specified task type
-python run_air_benchmark.py \\
---task_types long-doc \\
---output_dir ./search_results \\
---encoder BAAI/bge-m3 \\
---reranker BAAI/bge-reranker-v2-m3 \\
---search_top_k 1000 \\
---rerank_top_k 100 \\
---max_query_length 512 \\
---max_passage_length 512 \\
---batch_size 512 \\
---pooling_method cls \\
---normalize_embeddings True \\
---use_fp16 True \\
---add_instruction False \\
---overwrite False
-
-# Run the tasks in the specified task type and domains
-python run_air_benchmark.py \\
---task_types long-doc \\
---domains arxiv book \\
---output_dir ./search_results \\
---encoder BAAI/bge-m3 \\
---reranker BAAI/bge-reranker-v2-m3 \\
---search_top_k 1000 \\
---rerank_top_k 100 \\
---max_query_length 512 \\
---max_passage_length 512 \\
---batch_size 512 \\
---pooling_method cls \\
---normalize_embeddings True \\
---use_fp16 True \\
---add_instruction False \\
---overwrite False
-
-# Run the tasks in the specified languages
-python run_air_benchmark.py \\
---languages en \\
---output_dir ./search_results \\
---encoder BAAI/bge-m3 \\
---reranker BAAI/bge-reranker-v2-m3 \\
---search_top_k 1000 \\
---rerank_top_k 100 \\
---max_query_length 512 \\
---max_passage_length 512 \\
---batch_size 512 \\
---pooling_method cls \\
---normalize_embeddings True \\
---use_fp16 True \\
---add_instruction False \\
---overwrite False
-
-# Run the tasks in the specified task type, domains, and languages
-python run_air_benchmark.py \\
---task_types qa \\
---domains wiki web \\
---languages en \\
---output_dir ./search_results \\
---encoder BAAI/bge-m3 \\
---reranker BAAI/bge-reranker-v2-m3 \\
---search_top_k 1000 \\
---rerank_top_k 100 \\
---max_query_length 512 \\
---max_passage_length 512 \\
---batch_size 512 \\
---pooling_method cls \\
---normalize_embeddings True \\
---use_fp16 True \\
---add_instruction False \\
---overwrite False
-```
-3. Package the search results.
-```bash
-# Zip "Embedding Model + NoReranker" search results in "<search_results>/<model_name>/NoReranker" to "<save_dir>/<model_name>_NoReranker.zip".
-python zip_results.py \\
---results_dir search_results \\
---model_name bge-m3 \\
---save_dir search_results/zipped_results
-
-# Zip "Embedding Model + Reranker" search results in "<search_results>/<model_name>/<reranker_name>" to "<save_dir>/<model_name>_<reranker_name>.zip".
-python zip_results.py \\
---results_dir search_results \\
---model_name bge-m3 \\
---reranker_name bge-reranker-v2-m3 \\
---save_dir search_results/zipped_results
-```
-4. Upload the `.zip` file on this page and fill in the model information: 
-- Model Name: such as `bge-m3`.
-- Model URL: such as `https://huggingface.co/BAAI/bge-m3`.
-- Reranker Name: such as `bge-reranker-v2-m3`. Keep empty for `NoReranker`.
-- Reranker URL: such as `https://huggingface.co/BAAI/bge-reranker-v2-m3`. Keep empty for `NoReranker`.
-
-If you want to stay anonymous, you can only fill in the Model Name and Reranker Name (keep empty for `NoReranker`), and check the selection box below befor submission. 
-
-5. Congratulation! Your results will be shown on the leaderboard in up to one hour.
+## Check out the submission steps at [our GitHub repo](https://github.com/AIR-Bench/AIR-Bench/blob/main/docs/submit_to_leaderboard.md)
 """
 
 CITATION_BUTTON_LABEL = "Copy the following snippet to cite these results"
