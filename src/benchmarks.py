@@ -44,7 +44,7 @@ dataset_dict = {
     },
     "long-doc": {
         "arxiv": {
-            "en": ["gpt-3", "llama2", "llm-survey", "gemini"],
+            "en": ["gpt3", "llama2", "llm-survey", "gemini"],
         },
         "book": {
             "en": [
