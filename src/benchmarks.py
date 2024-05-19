@@ -25,7 +25,7 @@ dataset_dict = {
             "en": ["CC-News", ],
             "zh": ["CC-News", ]
         },
-        "health": {
+        "healthcare": {
             "en": ["PubMedQA", ],
             "zh": ["Huatuo-26M", ]
         },
