@@ -122,10 +122,10 @@ with demo:
                         )
                     with gr.Row():
                         search_bar = gr.Textbox(
-                            placeholder=" 🔍 Search for retrieval models (separate multiple queries with `;`) and press ENTER...",
+                            placeholder=" 🔍 Search for retrieval methods (separate multiple queries with `;`) and press ENTER...",
                             show_label=False,
                             elem_id="search-bar",
-                            info="Search the retrieval models"
+                            info="Search the retrieval methods"
                         )
                     # select reranking model
                     reranking_models = list(frozenset([eval_result.reranking_model for eval_result in raw_data]))
@@ -279,8 +279,8 @@ with demo:
                         )
                     with gr.Row():
                         search_bar = gr.Textbox(
-                            info="Search the retrieval models",
-                            placeholder=" 🔍 Search for retrieval models (separate multiple queries with `;`) and press ENTER...",
+                            info="Search the retrieval methods",
+                            placeholder=" 🔍 Search for retrieval methods (separate multiple queries with `;`) and press ENTER...",
                             show_label=False,
                             elem_id="search-bar-long-doc",
                         )
@@ -435,9 +435,9 @@ with demo:
                     gr.Markdown("## ✉️Submit your model here!", elem_classes="markdown-text")
                 with gr.Row():
                     with gr.Column():
-                        model_name = gr.Textbox(label="Retrieval Model name")
+                        model_name = gr.Textbox(label="Retrieval Method name")
                     with gr.Column():
-                        model_url = gr.Textbox(label="Retrieval Model URL")
+                        model_url = gr.Textbox(label="Retrieval Method URL")
                 with gr.Row():
                     with gr.Column():
                         reranking_model_name = gr.Textbox(

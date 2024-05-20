@@ -20,7 +20,7 @@ class ColumnContent:
 
 
 COL_NAME_AVG = "Average ⬆️"
-COL_NAME_RETRIEVAL_MODEL = "Retrieval Model"
+COL_NAME_RETRIEVAL_MODEL = "Retrieval Method"
 COL_NAME_RERANKING_MODEL = "Reranking Model"
 COL_NAME_RETRIEVAL_MODEL_LINK = "Retrieval Model LINK"
 COL_NAME_RERANKING_MODEL_LINK = "Reranking Model LINK"

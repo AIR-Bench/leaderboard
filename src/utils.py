@@ -265,26 +265,10 @@ def submit_results(
             # TODO: retrieve the model page and find the model name on the page
             return styled_error(
                 f"failed to submit. Model url must start with `https://` or `http://`. Illegal model url: {model_url}")
-        if model_url.startswith("https://huggingface.co/"):
-            # validate model card
-            repo_id = model_url.removeprefix("https://huggingface.co/")
-            try:
-                card = ModelCard.load(repo_id)
-            except EntryNotFoundError as e:
-                return styled_error(
-                    f"failed to submit. Model url must be a link to a valid HuggingFace model on HuggingFace space. Could not get model {repo_id}")
         if reranking_model != "NoReranker":
             if not reranking_model_url.startswith("https://") and not reranking_model_url.startswith("http://"):
                 return styled_error(
                     f"failed to submit. Model url must start with `https://` or `http://`. Illegal model url: {model_url}")
-            if reranking_model_url.startswith("https://huggingface.co/"):
-                # validate model card
-                repo_id = reranking_model_url.removeprefix("https://huggingface.co/")
-                try:
-                    card = ModelCard.load(repo_id)
-                except EntryNotFoundError as e:
-                    return styled_error(
-                        f"failed to submit. Model url must be a link to a valid HuggingFace model on HuggingFace space. Could not get model {repo_id}")
 
     # rename the uploaded file
     input_fp = Path(filepath)
