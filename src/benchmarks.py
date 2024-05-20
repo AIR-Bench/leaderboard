@@ -31,7 +31,7 @@ dataset_dict = {
         },
         "law": {
             "en": ["pile-of-law", ],
-            "zh": ["flk_npc_gov_cn", ]
+             # "zh": ["flk_npc_gov_cn", ]
         },
         "finance": {
             "en": ["Reuters-Financial", ],
