@@ -130,12 +130,13 @@ with demo:
                     # select reranking model
                     reranking_models = list(frozenset([eval_result.reranking_model for eval_result in raw_data]))
                     with gr.Row():
-                        selected_rerankings = gr.CheckboxGroup(
+                        selected_rerankings = gr.Dropdown(
                             choices=reranking_models,
                             value=reranking_models,
                             label="Select the reranking models",
                             elem_id="reranking-select",
-                            interactive=True
+                            interactive=True,
+                            multiselect=True
                         )
                     with gr.Row():
                         select_noreranker_only_btn = gr.ClearButton(
@@ -287,12 +288,13 @@ with demo:
                     # select reranking model
                     reranking_models = list(frozenset([eval_result.reranking_model for eval_result in raw_data]))
                     with gr.Row():
-                        selected_rerankings = gr.CheckboxGroup(
+                        selected_rerankings = gr.Dropdown(
                             choices=reranking_models,
                             value=reranking_models,
                             label="Select the reranking models",
                             elem_id="reranking-select-long-doc",
-                            interactive=True
+                            interactive=True,
+                            multiselect=True,
                         )
                     with gr.Row():
                         select_noreranker_only_btn = gr.ClearButton(
