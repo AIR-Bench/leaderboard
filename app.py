@@ -243,6 +243,7 @@ with demo:
                         selected_rerankings,
                         search_bar,
                         show_anonymous,
+                        show_revision_and_timestamp
                     ],
                     leaderboard_table,
                     queue=True,

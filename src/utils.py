@@ -154,8 +154,8 @@ def update_table(
         reranking_query: list,
         query: str,
         show_anonymous: bool,
-        reset_ranking: bool = True,
-        show_revision_and_timestamp: bool = False
+        show_revision_and_timestamp: bool = False,
+        reset_ranking: bool = True
 ):
     return _update_table(
         "qa", hidden_df, domains, langs, reranking_query, query, show_anonymous, reset_ranking, show_revision_and_timestamp)
@@ -168,8 +168,9 @@ def update_table_long_doc(
         reranking_query: list,
         query: str,
         show_anonymous: bool,
-        reset_ranking: bool = True,
-        show_revision_and_timestamp: bool = False
+        show_revision_and_timestamp: bool = False,
+        reset_ranking: bool = True
+
 ):
     return _update_table(
         "long-doc", hidden_df, domains, langs, reranking_query, query, show_anonymous, reset_ranking, show_revision_and_timestamp)
