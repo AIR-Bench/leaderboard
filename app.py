@@ -290,7 +290,7 @@ with demo:
                     with gr.Row():
                         selected_rerankings = gr.Dropdown(
                             choices=reranking_models,
-                            value=reranking_models,
+                            # value=reranking_models,
                             label="Select the reranking models",
                             elem_id="reranking-select-long-doc",
                             interactive=True,
