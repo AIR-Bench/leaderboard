@@ -128,11 +128,11 @@ with demo:
                             info="Search the retrieval methods"
                         )
                     # select reranking model
-                    reranking_models = list(frozenset([eval_result.reranking_model for eval_result in raw_data]))
+                    reranking_models = sorted(list(frozenset([eval_result.reranking_model for eval_result in raw_data])))
                     with gr.Row():
                         selected_rerankings = gr.Dropdown(
                             choices=reranking_models,
-                            value=reranking_models,
+                            # value=reranking_models,
                             label="Select the reranking models",
                             elem_id="reranking-select",
                             interactive=True,

@@ -23,7 +23,10 @@ def remove_html(input_str):
 
 
 def filter_models(df: pd.DataFrame, reranking_query: list) -> pd.DataFrame:
-    return df.loc[df[COL_NAME_RERANKING_MODEL].apply(remove_html).isin(reranking_query)]
+    if not reranking_query:
+        return df
+    else:
+        return df.loc[df[COL_NAME_RERANKING_MODEL].apply(remove_html).isin(reranking_query)]
 
 
 def filter_queries(query: str, df: pd.DataFrame) -> pd.DataFrame:
