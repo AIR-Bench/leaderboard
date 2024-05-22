@@ -88,7 +88,7 @@ METRIC_LIST = [
     "recall_at_1",
     "recall_at_3",
     "recall_at_5",
-    "recall_at_10"
+    "recall_at_10",
     "recall_at_100",
     "recall_at_1000",
     "precision_at_1",
