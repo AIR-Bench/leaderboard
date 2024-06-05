@@ -218,9 +218,6 @@ def upload_file(filepath: str):
     return filepath
 
 
-from huggingface_hub import ModelCard
-from huggingface_hub.utils import EntryNotFoundError
-
 
 def get_iso_format_timestamp():
     # Get the current timestamp with UTC as the timezone

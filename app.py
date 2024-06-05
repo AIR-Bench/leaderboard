@@ -79,30 +79,6 @@ def update_metric_long_doc(
     return update_metric(raw_data, "long-doc", metric, domains, langs, reranking_model, query, show_anonymous, show_revision_and_timestamp)
 
 
-def update_table_without_ranking(
-        hidden_df,
-        domains,
-        langs,
-        reranking_query,
-        query,
-        show_anonymous,
-        show_revision_and_timestamp,
-):
-    return update_table(hidden_df, domains, langs, reranking_query, query, show_anonymous, reset_ranking=False, show_revision_and_timestamp=show_revision_and_timestamp)
-
-
-def update_table_without_ranking_long_doc(
-        hidden_df,
-        domains,
-        langs,
-        reranking_query,
-        query,
-        show_anonymous,
-        show_revision_and_timestamp,
-):
-    return update_table_long_doc(hidden_df, domains, langs, reranking_query, query, show_anonymous, reset_ranking=False, show_revision_and_timestamp=show_revision_and_timestamp)
-
-
 demo = gr.Blocks(css=custom_css)
 with demo:
     gr.HTML(TITLE)
@@ -139,8 +115,7 @@ with demo:
                             multiselect=True
                         )
                     with gr.Row():
-                        select_noreranker_only_btn = gr.ClearButton(
-                            selected_rerankings,
+                        select_noreranker_only_btn = gr.Button(
                             value="Only show results without ranking models",
                         )
 
@@ -202,7 +177,7 @@ with demo:
 
             # Set search_bar listener
             search_bar.submit(
-                update_table_without_ranking,
+                update_table,
                 [
                     hidden_leaderboard_table_for_search,
                     selected_domains,
@@ -214,25 +189,9 @@ with demo:
                 leaderboard_table,
             )
 
-            for selector in [show_revision_and_timestamp, selected_rerankings]:
-                selector.change(
-                    update_table_without_ranking,
-                    [
-                        hidden_leaderboard_table_for_search,
-                        selected_domains,
-                        selected_langs,
-                        selected_rerankings,
-                        search_bar,
-                        show_anonymous,
-                        show_revision_and_timestamp
-                    ],
-                    leaderboard_table,
-                    queue=True
-                )
-
             # Set column-wise listener
             for selector in [
-                selected_domains, selected_langs, show_anonymous
+                selected_domains, selected_langs, show_anonymous, show_revision_and_timestamp, selected_rerankings
             ]:
                 selector.change(
                     update_table,
@@ -282,7 +241,8 @@ with demo:
                     with gr.Row():
                         search_bar = gr.Textbox(
                             info="Search the retrieval methods",
-                            placeholder=" 🔍 Search for retrieval methods (separate multiple queries with `;`) and press ENTER...",
+                            placeholder=" 🔍 Search for retrieval methods (separate multiple queries with `;`)"
+                                        " and press ENTER...",
                             show_label=False,
                             elem_id="search-bar-long-doc",
                         )
@@ -298,8 +258,7 @@ with demo:
                             multiselect=True,
                         )
                     with gr.Row():
-                        select_noreranker_only_btn = gr.ClearButton(
-                            selected_rerankings,
+                        select_noreranker_only_btn = gr.Button(
                             value="Only show results without ranking models",
                         )
                 with gr.Column(min_width=320):
@@ -361,7 +320,7 @@ with demo:
 
             # Set search_bar listener
             search_bar.submit(
-                update_table_without_ranking_long_doc,
+                update_table_long_doc,
                 [
                     hidden_leaderboard_table_for_search,
                     selected_domains,
@@ -374,25 +333,9 @@ with demo:
                 leaderboard_table_long_doc,
             )
 
-            for selector in [show_revision_and_timestamp, selected_rerankings]:
-                selector.change(
-                    update_table_without_ranking_long_doc,
-                    [
-                        hidden_leaderboard_table_for_search,
-                        selected_domains,
-                        selected_langs,
-                        selected_rerankings,
-                        search_bar,
-                        show_anonymous,
-                        show_revision_and_timestamp
-                    ],
-                    leaderboard_table_long_doc,
-                    queue=True,
-                )
-
             # Set column-wise listener
             for selector in [
-                selected_domains, selected_langs, show_anonymous
+                selected_domains, selected_langs, show_anonymous, show_revision_and_timestamp, selected_rerankings
             ]:
                 selector.change(
                     update_table_long_doc,
