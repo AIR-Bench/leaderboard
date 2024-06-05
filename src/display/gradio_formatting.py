@@ -14,7 +14,6 @@ def get_search_bar():
     return gr.Textbox(
         placeholder=" 🔍 Search for retrieval methods (separate multiple queries with `;`) and press ENTER...",
         show_label=False,
-        # elem_id="search-bar",
         info="Search the retrieval methods"
     )
 
@@ -23,19 +22,21 @@ def get_reranking_dropdown(model_list):
     return gr.Dropdown(
         choices=model_list,
         label="Select the reranking models",
-        # elem_id="reranking-select",
         interactive=True,
         multiselect=True
     )
 
+
 def get_noreranking_dropdown():
     return gr.Dropdown(
-        choices=["NoReranker",],
-        value=["NoReranker",],
+        choices=["NoReranker", ],
+        value=["NoReranker", ],
         interactive=False,
         multiselect=True,
         visible=False
     )
+
+
 def get_noreranker_button():
     return gr.Button(
         value="Only show results without ranking models",
@@ -48,7 +49,7 @@ def get_metric_dropdown(metric_list, default_metrics):
         value=default_metrics,
         label="Select the metric",
         interactive=True,
-        # elem_id="metric-select-long-doc",
+        info="Assuming that LLMs could generate correct answers when the correct context is retrieved, we recommend to use recall_at_k."
     )
 
 
@@ -57,7 +58,6 @@ def get_domain_dropdown(domain_list, default_domains):
         choices=domain_list,
         value=default_domains,
         label="Select the domains",
-        # elem_id="domain-column-select",
         interactive=True,
     )
 
@@ -67,7 +67,6 @@ def get_language_dropdown(language_list, default_languages):
         choices=language_list,
         value=language_list,
         label="Select the languages",
-        # elem_id="language-column-select",
         multiselect=True,
         interactive=True
     )
@@ -91,9 +90,9 @@ def get_revision_and_ts_checkbox():
 
 def get_leaderboard_table(df, datatype, visible=True):
     return gr.components.Dataframe(
-                value=df,
-                datatype=datatype,
-                elem_id="leaderboard-table",
-                interactive=False,
-                visible=visible,
-            )
+        value=df,
+        datatype=datatype,
+        elem_id="leaderboard-table",
+        interactive=False,
+        visible=visible,
+    )

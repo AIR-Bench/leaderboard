@@ -148,4 +148,4 @@ LANG_COLS_QA = list(frozenset([c.lang for c in qa_benchmark_dict.values()]))
 DOMAIN_COLS_LONG_DOC = list(frozenset([c.domain for c in long_doc_benchmark_dict.values()]))
 LANG_COLS_LONG_DOC = list(frozenset([c.lang for c in long_doc_benchmark_dict.values()]))
 
-DEFAULT_METRIC = "ndcg_at_10"
+DEFAULT_METRIC = "recall_at_10"
