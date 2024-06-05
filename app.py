@@ -14,12 +14,12 @@ from src.display.css_html_js import custom_css
 from src.display.utils import COL_NAME_IS_ANONYMOUS, COL_NAME_REVISION, COL_NAME_TIMESTAMP
 from src.envs import API, EVAL_RESULTS_PATH, REPO_ID, RESULTS_REPO, TOKEN
 from src.read_evals import get_raw_eval_results, get_leaderboard_df
-from src.utils import update_table, update_metric, update_table_long_doc, upload_file, get_default_cols, submit_results, clear_reranking_selections
-
+from src.utils import update_metric, upload_file, get_default_cols, submit_results
+from src.display.gradio_formatting import get_version_dropdown, get_search_bar, get_reranking_dropdown, get_noreranker_button, get_metric_dropdown, get_domain_dropdown, get_language_dropdown, get_anonymous_checkbox, get_revision_and_ts_checkbox, get_leaderboard_table
+from src.display.gradio_listener import set_listeners
 
 def restart_space():
     API.restart_space(repo_id=REPO_ID)
-
 
 
 try:
@@ -54,6 +54,9 @@ shown_columns_long_doc, types_long_doc = get_default_cols(
 leaderboard_df_long_doc = leaderboard_df_long_doc[~leaderboard_df_long_doc[COL_NAME_IS_ANONYMOUS]][shown_columns_long_doc]
 leaderboard_df_long_doc.drop([COL_NAME_REVISION, COL_NAME_TIMESTAMP], axis=1, inplace=True)
 
+# select reranking model
+reranking_models = sorted(list(frozenset([eval_result.reranking_model for eval_result in raw_data])))
+
 
 def update_metric_qa(
         metric: str,
@@ -65,7 +68,6 @@ def update_metric_qa(
         show_revision_and_timestamp,
 ):
     return update_metric(raw_data, 'qa', metric, domains, langs, reranking_model, query, show_anonymous, show_revision_and_timestamp)
-
 
 def update_metric_long_doc(
         metric: str,
@@ -90,123 +92,46 @@ with demo:
                 with gr.Column():
                     # search retrieval models
                     with gr.Row():
-                        selected_version = gr.Dropdown(
-                            choices=["AIR-Bench_24.04",],
-                            value="AIR-Bench_24.04",
-                            label="Select the version of AIR-Bench",
-                            interactive = True
-                        )
+                        selected_version = get_version_dropdown()
                     with gr.Row():
-                        search_bar = gr.Textbox(
-                            placeholder=" 🔍 Search for retrieval methods (separate multiple queries with `;`) and press ENTER...",
-                            show_label=False,
-                            elem_id="search-bar",
-                            info="Search the retrieval methods"
-                        )
-                    # select reranking model
-                    reranking_models = sorted(list(frozenset([eval_result.reranking_model for eval_result in raw_data])))
+                        search_bar = get_search_bar()
                     with gr.Row():
-                        selected_rerankings = gr.Dropdown(
-                            choices=reranking_models,
-                            # value=reranking_models,
-                            label="Select the reranking models",
-                            elem_id="reranking-select",
-                            interactive=True,
-                            multiselect=True
-                        )
+                        selected_rerankings = get_reranking_dropdown(reranking_models)
                     with gr.Row():
-                        select_noreranker_only_btn = gr.Button(
-                            value="Only show results without ranking models",
-                        )
+                        select_noreranker_only_btn = get_noreranker_button()
 
                 with gr.Column(min_width=320):
                     # select the metric
-                    selected_metric = gr.Dropdown(
-                        choices=METRIC_LIST,
-                        value=DEFAULT_METRIC,
-                        label="Select the metric",
-                        interactive=True,
-                        elem_id="metric-select",
-                    )
+                    selected_metric = get_metric_dropdown(METRIC_LIST, DEFAULT_METRIC)
                     # select domain
                     with gr.Row():
-                        selected_domains = gr.CheckboxGroup(
-                            choices=DOMAIN_COLS_QA,
-                            value=DOMAIN_COLS_QA,
-                            label="Select the domains",
-                            elem_id="domain-column-select",
-                            interactive=True,
-                        )
+                        selected_domains = get_domain_dropdown(DOMAIN_COLS_QA, DOMAIN_COLS_QA)
                     # select language
                     with gr.Row():
-                        selected_langs = gr.Dropdown(
-                            choices=LANG_COLS_QA,
-                            value=LANG_COLS_QA,
-                            label="Select the languages",
-                            elem_id="language-column-select",
-                            multiselect=True,
-                            interactive=True
-                        )
+                        selected_langs = get_language_dropdown(LANG_COLS_QA, LANG_COLS_QA)
                     with gr.Row():
-                        show_anonymous = gr.Checkbox(
-                            label="Show anonymous submissions",
-                            value=False,
-                            info="The anonymous submissions might have invalid model information."
-                        )
+                        show_anonymous = get_anonymous_checkbox()
                     with gr.Row():
-                        show_revision_and_timestamp = gr.Checkbox(
-                            label="Show submission details",
-                            value=False,
-                            info="Show the revision and timestamp information of submissions"
-                        )
+                        show_revision_and_timestamp = get_revision_and_ts_checkbox()
 
-            leaderboard_table = gr.components.Dataframe(
-                value=leaderboard_df_qa,
-                datatype=types_qa,
-                elem_id="leaderboard-table",
-                interactive=False,
-                visible=True,
-            )
+
+            leaderboard_table = get_leaderboard_table(leaderboard_df_qa, types_qa)
 
             # Dummy leaderboard for handling the case when the user uses backspace key
-            hidden_leaderboard_table_for_search = gr.components.Dataframe(
-                value=original_df_qa,
-                datatype=types_qa,
-                visible=False,
-            )
+            hidden_leaderboard_table_for_search = get_leaderboard_table(original_df_qa, types_qa, visible=False)
 
-            # Set search_bar listener
-            search_bar.submit(
-                update_table,
-                [
-                    hidden_leaderboard_table_for_search,
-                    selected_domains,
-                    selected_langs,
-                    selected_rerankings,
-                    search_bar,
-                    show_anonymous,
-                ],
+            set_listeners(
+                "qa",
                 leaderboard_table,
+                hidden_leaderboard_table_for_search,
+                search_bar,
+                select_noreranker_only_btn,
+                selected_domains,
+                selected_langs,
+                selected_rerankings,
+                show_anonymous,
+                show_revision_and_timestamp,
             )
-
-            # Set column-wise listener
-            for selector in [
-                selected_domains, selected_langs, show_anonymous, show_revision_and_timestamp, selected_rerankings
-            ]:
-                selector.change(
-                    update_table,
-                    [
-                        hidden_leaderboard_table_for_search,
-                        selected_domains,
-                        selected_langs,
-                        selected_rerankings,
-                        search_bar,
-                        show_anonymous,
-                        show_revision_and_timestamp
-                    ],
-                    leaderboard_table,
-                    queue=True,
-                )
 
             # set metric listener
             selected_metric.change(
@@ -223,134 +148,56 @@ with demo:
                 queue=True
             )
 
-            select_noreranker_only_btn.click(
-                clear_reranking_selections,
-                outputs=selected_rerankings
-            )
-
         with gr.TabItem("Long Doc", elem_id="long-doc-benchmark-tab-table", id=1):
             with gr.Row():
                 with gr.Column():
                     with gr.Row():
-                        selected_version = gr.Dropdown(
-                            choices=["AIR-Bench_24.04",],
-                            value="AIR-Bench_24.04",
-                            label="Select the version of AIR-Bench",
-                            interactive=True
-                        )
+                        selected_version = get_version_dropdown()
                     with gr.Row():
-                        search_bar = gr.Textbox(
-                            info="Search the retrieval methods",
-                            placeholder=" 🔍 Search for retrieval methods (separate multiple queries with `;`)"
-                                        " and press ENTER...",
-                            show_label=False,
-                            elem_id="search-bar-long-doc",
-                        )
+                        search_bar = get_search_bar()
                     # select reranking model
-                    reranking_models = list(frozenset([eval_result.reranking_model for eval_result in raw_data]))
                     with gr.Row():
-                        selected_rerankings = gr.Dropdown(
-                            choices=reranking_models,
-                            # value=reranking_models,
-                            label="Select the reranking models",
-                            elem_id="reranking-select-long-doc",
-                            interactive=True,
-                            multiselect=True,
-                        )
+                        selected_rerankings = get_reranking_dropdown(reranking_models)
                     with gr.Row():
-                        select_noreranker_only_btn = gr.Button(
-                            value="Only show results without ranking models",
-                        )
+                        select_noreranker_only_btn = get_noreranker_button()
                 with gr.Column(min_width=320):
                     # select the metric
                     with gr.Row():
-                        selected_metric = gr.Dropdown(
-                            choices=METRIC_LIST,
-                            value=DEFAULT_METRIC,
-                            label="Select the metric",
-                            interactive=True,
-                            elem_id="metric-select-long-doc",
-                        )
+                        selected_metric = get_metric_dropdown(METRIC_LIST, DEFAULT_METRIC)
                     # select domain
                     with gr.Row():
-                        selected_domains = gr.CheckboxGroup(
-                            choices=DOMAIN_COLS_LONG_DOC,
-                            value=DOMAIN_COLS_LONG_DOC,
-                            label="Select the domains",
-                            elem_id="domain-column-select-long-doc",
-                            interactive=True,
-                        )
+                        selected_domains = get_domain_dropdown(DOMAIN_COLS_LONG_DOC, DOMAIN_COLS_LONG_DOC)
                     # select language
                     with gr.Row():
-                        selected_langs = gr.Dropdown(
-                            choices=LANG_COLS_LONG_DOC,
-                            value=LANG_COLS_LONG_DOC,
-                            label="Select the languages",
-                            elem_id="language-column-select-long-doc",
-                            multiselect=True,
-                            interactive=True
+                        selected_langs = get_language_dropdown(
+                            LANG_COLS_LONG_DOC, LANG_COLS_LONG_DOC
                         )
                     with gr.Row():
-                        show_anonymous = gr.Checkbox(
-                            label="Show anonymous submissions",
-                            value=False,
-                            info="The anonymous submissions might have invalid model information."
-                        )
+                        show_anonymous = get_anonymous_checkbox()
                     with gr.Row():
-                        show_revision_and_timestamp = gr.Checkbox(
-                            label="Show submission details",
-                            value=False,
-                            info="Show the revision and timestamp information of submissions"
-                        )
+                        show_revision_and_timestamp = get_revision_and_ts_checkbox()
 
-            leaderboard_table_long_doc = gr.components.Dataframe(
-                value=leaderboard_df_long_doc,
-                datatype=types_long_doc,
-                elem_id="leaderboard-table-long-doc",
-                interactive=False,
-                visible=True,
+            leaderboard_table = get_leaderboard_table(
+                leaderboard_df_long_doc, types_long_doc
             )
 
             # Dummy leaderboard for handling the case when the user uses backspace key
-            hidden_leaderboard_table_for_search = gr.components.Dataframe(
-                value=original_df_long_doc,
-                datatype=types_long_doc,
-                visible=False,
+            hidden_leaderboard_table_for_search =get_leaderboard_table(
+                original_df_long_doc, types_long_doc, visible=False
             )
 
-            # Set search_bar listener
-            search_bar.submit(
-                update_table_long_doc,
-                [
-                    hidden_leaderboard_table_for_search,
-                    selected_domains,
-                    selected_langs,
-                    selected_rerankings,
-                    search_bar,
-                    show_anonymous,
-                    show_revision_and_timestamp
-                ],
-                leaderboard_table_long_doc,
+            set_listeners(
+                "long-doc",
+                leaderboard_table,
+                hidden_leaderboard_table_for_search,
+                search_bar,
+                select_noreranker_only_btn,
+                selected_domains,
+                selected_langs,
+                selected_rerankings,
+                show_anonymous,
+                show_revision_and_timestamp,
             )
-
-            # Set column-wise listener
-            for selector in [
-                selected_domains, selected_langs, show_anonymous, show_revision_and_timestamp, selected_rerankings
-            ]:
-                selector.change(
-                    update_table_long_doc,
-                    [
-                        hidden_leaderboard_table_for_search,
-                        selected_domains,
-                        selected_langs,
-                        selected_rerankings,
-                        search_bar,
-                        show_anonymous,
-                        show_revision_and_timestamp
-                    ],
-                    leaderboard_table_long_doc,
-                    queue=True,
-                )
 
             # set metric listener
             selected_metric.change(
@@ -364,13 +211,8 @@ with demo:
                     show_anonymous,
                     show_revision_and_timestamp
                 ],
-                leaderboard_table_long_doc,
+                leaderboard_table,
                 queue=True
-            )
-
-            select_noreranker_only_btn.click(
-                clear_reranking_selections,
-                outputs=selected_rerankings
             )
 
         with gr.TabItem("🚀Submit here!", elem_id="submit-tab-table", id=2):
