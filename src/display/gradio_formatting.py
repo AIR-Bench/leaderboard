@@ -28,7 +28,14 @@ def get_reranking_dropdown(model_list):
         multiselect=True
     )
 
-
+def get_noreranking_dropdown():
+    return gr.Dropdown(
+        choices=["NoReranker",],
+        value=["NoReranker",],
+        interactive=False,
+        multiselect=True,
+        visible=False
+    )
 def get_noreranker_button():
     return gr.Button(
         value="Only show results without ranking models",

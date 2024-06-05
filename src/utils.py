@@ -120,7 +120,7 @@ def select_columns(
         filtered_df[COL_NAME_AVG] = filtered_df[selected_cols].apply(calculate_mean, axis=1).round(decimals=2)
         filtered_df.sort_values(by=[COL_NAME_AVG], ascending=False, inplace=True)
         filtered_df.reset_index(inplace=True, drop=True)
-        filtered_df[COL_NAME_RANK] = filtered_df[COL_NAME_AVG].rank(ascending=False, method="min")
+        filtered_df = reset_rank(filtered_df)
 
     return filtered_df
 
@@ -312,5 +312,6 @@ def submit_results(
     )
 
 
-def clear_reranking_selections():
-    return ["NoReranker",]
+def reset_rank(df):
+    df[COL_NAME_RANK] = df[COL_NAME_AVG].rank(ascending=False, method="min")
+    return df

@@ -1,6 +1,6 @@
 # Your leaderboard name
 TITLE = """<h1 align="center" id="space-title">AIR-Bench: Automated Heterogeneous Information Retrieval Benchmark
- (Preview) </h1>"""
+ (v0.0.2) </h1>"""
 
 # What does your leaderboard evaluate?
 INTRODUCTION_TEXT = """

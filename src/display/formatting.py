@@ -4,7 +4,7 @@ def model_hyperlink(link, model_name):
 
 def make_clickable_model(model_name: str, model_link: str):
     # link = f"https://huggingface.co/{model_name}"
-    if not model_link or not model_link.startswith("https://"):
+    if not model_link or not model_link.startswith("https://") or model_name == "BM25":
         return model_name
     return model_hyperlink(model_link, model_name)
 

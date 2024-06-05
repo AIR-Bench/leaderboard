@@ -1,4 +1,4 @@
-from src.utils import update_table, update_table_long_doc, clear_reranking_selections
+from src.utils import update_table, update_table_long_doc
 
 
 def set_listeners(
@@ -6,7 +6,6 @@ def set_listeners(
         displayed_leaderboard,
         hidden_leaderboard,
         search_bar,
-        select_noreranker_only_btn,
         selected_domains,
         selected_langs,
         selected_rerankings,
@@ -52,9 +51,3 @@ def set_listeners(
             displayed_leaderboard,
             queue=True,
         )
-
-
-    select_noreranker_only_btn.click(
-        clear_reranking_selections,
-        outputs=selected_rerankings
-    )

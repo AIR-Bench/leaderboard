@@ -25,6 +25,7 @@ from src.display.utils import (
 
 from src.display.formatting import make_clickable_model
 
+pd.options.mode.copy_on_write = True
 
 def calculate_mean(row):
     if pd.isna(row).any():
