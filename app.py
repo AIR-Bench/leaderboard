@@ -9,7 +9,7 @@ from src.about import (
     EVALUATION_QUEUE_TEXT
 )
 from src.benchmarks import DOMAIN_COLS_QA, LANG_COLS_QA, DOMAIN_COLS_LONG_DOC, LANG_COLS_LONG_DOC, METRIC_LIST, \
-    DEFAULT_METRIC
+    DEFAULT_METRIC_QA, DEFAULT_METRIC_LONG_DOC
 from src.display.css_html_js import custom_css
 from src.display.utils import COL_NAME_IS_ANONYMOUS, COL_NAME_REVISION, COL_NAME_TIMESTAMP, COL_NAME_RERANKING_MODEL
 from src.envs import API, EVAL_RESULTS_PATH, REPO_ID, RESULTS_REPO, TOKEN
@@ -35,9 +35,9 @@ except Exception as e:
 raw_data = get_raw_eval_results(f"{EVAL_RESULTS_PATH}/AIR-Bench_24.04")
 
 original_df_qa = get_leaderboard_df(
-    raw_data, task='qa', metric=DEFAULT_METRIC)
+    raw_data, task='qa', metric=DEFAULT_METRIC_QA)
 original_df_long_doc = get_leaderboard_df(
-    raw_data, task='long-doc', metric=DEFAULT_METRIC)
+    raw_data, task='long-doc', metric=DEFAULT_METRIC_LONG_DOC)
 print(f'raw data: {len(raw_data)}')
 print(f'QA data loaded: {original_df_qa.shape}')
 print(f'Long-Doc data loaded: {len(original_df_long_doc)}')
@@ -103,7 +103,7 @@ with demo:
                     with gr.Row():
                         selected_version = get_version_dropdown()
                     # select the metric
-                    selected_metric = get_metric_dropdown(METRIC_LIST, DEFAULT_METRIC)
+                    selected_metric = get_metric_dropdown(METRIC_LIST, DEFAULT_METRIC_QA)
                     with gr.Row():
                         show_anonymous = get_anonymous_checkbox()
                     with gr.Row():
@@ -205,7 +205,7 @@ with demo:
                         selected_version = get_version_dropdown()
                     # select the metric
                     with gr.Row():
-                        selected_metric = get_metric_dropdown(METRIC_LIST, DEFAULT_METRIC)
+                        selected_metric = get_metric_dropdown(METRIC_LIST, DEFAULT_METRIC_LONG_DOC)
                     with gr.Row():
                         show_anonymous = get_anonymous_checkbox()
                     with gr.Row():

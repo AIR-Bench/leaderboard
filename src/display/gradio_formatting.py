@@ -49,7 +49,6 @@ def get_metric_dropdown(metric_list, default_metrics):
         value=default_metrics,
         label="Select the metric",
         interactive=True,
-        info="Assuming that LLMs could generate correct answers when the correct context is retrieved, we recommend to use recall_at_k."
     )
 
 
