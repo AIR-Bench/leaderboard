@@ -308,7 +308,8 @@ def submit_results(
         repo_type="dataset",
         commit_message=f"feat: submit {model} + {reranking_model} config")
     return styled_message(
-        f"Thanks for submission!\nSubmission revision: {revision}"
+        f"Thanks for submission!\n"
+        f"Retrieval method: {model}\nReranking model: {reranking_model}\nSubmission revision: {revision}"
     )
 
 
