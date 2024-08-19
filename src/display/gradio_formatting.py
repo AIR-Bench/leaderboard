@@ -1,10 +1,10 @@
 import gradio as gr
-
+from src.envs import BENCHMARK_VERSION_LIST, LATEST_BENCHMARK_VERSION
 
 def get_version_dropdown():
     return gr.Dropdown(
-        choices=["AIR-Bench_24.04", ],
-        value="AIR-Bench_24.04",
+        choices=BENCHMARK_VERSION_LIST,
+        value=LATEST_BENCHMARK_VERSION,
         label="Select the version of AIR-Bench",
         interactive=True
     )

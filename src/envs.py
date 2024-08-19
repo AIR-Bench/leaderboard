@@ -1,5 +1,5 @@
 import os
-
+from display.formatting import model_hyperlink
 from huggingface_hub import HfApi
 
 # Info to change for your repository
@@ -22,3 +22,12 @@ CACHE_PATH = os.getenv("HF_HOME", ".")
 EVAL_RESULTS_PATH = os.path.join(CACHE_PATH, "eval_results")
 
 API = HfApi(token=TOKEN)
+
+BM25_LINK = model_hyperlink("https://github.com/castorini/pyserini", "BM25")
+
+BENCHMARK_VERSION_LIST = [
+    "AIR-Bench_24.04",
+    # "AIR-Bench_24.05",
+]
+
+LATEST_BENCHMARK_VERSION = BENCHMARK_VERSION_LIST[-1]

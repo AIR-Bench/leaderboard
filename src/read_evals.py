@@ -174,8 +174,8 @@ def get_raw_eval_results(results_path: str) -> List[FullEvalResult]:
             print(f"loading file failed. {model_result_filepath}")
             continue
         print(f'file loaded: {model_result_filepath}')
-        eval_name = eval_result.eval_name
-        eval_results[eval_name] = eval_result
+        timestamp = eval_result.timestamp
+        eval_results[timestamp] = eval_result
 
     results = []
     for k, v in eval_results.items():

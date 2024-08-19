@@ -10,7 +10,7 @@ from src.benchmarks import BENCHMARK_COLS_QA, BENCHMARK_COLS_LONG_DOC, Benchmark
 from src.display.formatting import styled_message, styled_error
 from src.display.utils import COLS_QA, TYPES_QA, COLS_LONG_DOC, TYPES_LONG_DOC, COL_NAME_RANK, COL_NAME_AVG, \
     COL_NAME_RERANKING_MODEL, COL_NAME_RETRIEVAL_MODEL, COL_NAME_IS_ANONYMOUS, COL_NAME_TIMESTAMP, COL_NAME_REVISION, get_default_auto_eval_column_dict
-from src.envs import API, SEARCH_RESULTS_REPO
+from src.envs import API, SEARCH_RESULTS_REPO, LATEST_BENCHMARK_VERSION
 from src.read_evals import FullEvalResult, get_leaderboard_df, calculate_mean
 
 import re
@@ -251,7 +251,7 @@ def submit_results(
         model_url: str,
         reranking_model: str="",
         reranking_model_url: str="",
-        version: str="AIR-Bench_24.04",
+        version: str=LATEST_BENCHMARK_VERSION,
         is_anonymous=False):
     if not filepath.endswith(".zip"):
         return styled_error(f"file uploading aborted. wrong file type: {filepath}")

@@ -8,15 +8,57 @@ from src.about import (
     TITLE,
     EVALUATION_QUEUE_TEXT
 )
-from src.benchmarks import DOMAIN_COLS_QA, LANG_COLS_QA, DOMAIN_COLS_LONG_DOC, LANG_COLS_LONG_DOC, METRIC_LIST, \
-    DEFAULT_METRIC_QA, DEFAULT_METRIC_LONG_DOC
+from src.benchmarks import (
+    DOMAIN_COLS_QA,
+    LANG_COLS_QA,
+    DOMAIN_COLS_LONG_DOC,
+    LANG_COLS_LONG_DOC,
+    METRIC_LIST,
+    DEFAULT_METRIC_QA,
+    DEFAULT_METRIC_LONG_DOC
+)
 from src.display.css_html_js import custom_css
-from src.display.utils import COL_NAME_IS_ANONYMOUS, COL_NAME_REVISION, COL_NAME_TIMESTAMP, COL_NAME_RERANKING_MODEL, COL_NAME_RETRIEVAL_MODEL
-from src.envs import API, EVAL_RESULTS_PATH, REPO_ID, RESULTS_REPO, TOKEN
-from src.read_evals import get_raw_eval_results, get_leaderboard_df
-from src.utils import update_metric, upload_file, get_default_cols, submit_results, reset_rank, remove_html
-from src.display.gradio_formatting import get_version_dropdown, get_search_bar, get_reranking_dropdown, \
-    get_metric_dropdown, get_domain_dropdown, get_language_dropdown, get_anonymous_checkbox, get_revision_and_ts_checkbox, get_leaderboard_table, get_noreranking_dropdown
+from src.display.utils import (
+    COL_NAME_IS_ANONYMOUS,
+    COL_NAME_REVISION,
+    COL_NAME_TIMESTAMP,
+    COL_NAME_RERANKING_MODEL,
+    COL_NAME_RETRIEVAL_MODEL
+)
+from src.envs import (
+    API,
+    EVAL_RESULTS_PATH,
+    REPO_ID,
+    RESULTS_REPO,
+    TOKEN,
+    BM25_LINK,
+    BENCHMARK_VERSION_LIST,
+    LATEST_BENCHMARK_VERSION
+)
+from src.read_evals import (
+    get_raw_eval_results,
+    get_leaderboard_df
+)
+from src.utils import (
+    update_metric,
+    upload_file,
+    get_default_cols,
+    submit_results,
+    reset_rank,
+    remove_html
+)
+from src.display.gradio_formatting import (
+    get_version_dropdown,
+    get_search_bar,
+    get_reranking_dropdown,
+    get_metric_dropdown,
+    get_domain_dropdown,
+    get_language_dropdown,
+    get_anonymous_checkbox,
+    get_revision_and_ts_checkbox,
+    get_leaderboard_table,
+    get_noreranking_dropdown
+)
 from src.display.gradio_listener import set_listeners
 
 def restart_space():
@@ -32,7 +74,7 @@ except Exception as e:
     print(f'failed to download')
     restart_space()
 
-raw_data = get_raw_eval_results(f"{EVAL_RESULTS_PATH}/AIR-Bench_24.04")
+raw_data = get_raw_eval_results(f"{EVAL_RESULTS_PATH}/{LATEST_BENCHMARK_VERSION}")
 
 original_df_qa = get_leaderboard_df(
     raw_data, task='qa', metric=DEFAULT_METRIC_QA)
@@ -190,7 +232,7 @@ with demo:
                         queue=True
                     )
                 with gr.TabItem("Reranking Only", id=12):
-                    lb_df_reranker = leaderboard_df_qa[leaderboard_df_qa[COL_NAME_RETRIEVAL_MODEL] == "BM25"]
+                    lb_df_reranker = leaderboard_df_qa[leaderboard_df_qa[COL_NAME_RETRIEVAL_MODEL] == BM25_LINK]
                     lb_df_reranker = reset_rank(lb_df_reranker)
                     reranking_models_reranker = lb_df_reranker[COL_NAME_RERANKING_MODEL].apply(remove_html).unique().tolist()
                     with gr.Row():
@@ -199,7 +241,7 @@ with demo:
                         with gr.Column(scale=1):
                             search_bar_reranker = gr.Textbox(show_label=False, visible=False)
                     lb_table_reranker = get_leaderboard_table(lb_df_reranker, types_qa)
-                    hidden_lb_df_reranker = original_df_qa[original_df_qa[COL_NAME_RETRIEVAL_MODEL] == "BM25"]
+                    hidden_lb_df_reranker = original_df_qa[original_df_qa[COL_NAME_RETRIEVAL_MODEL] == BM25_LINK]
                     hidden_lb_df_reranker = reset_rank(hidden_lb_df_reranker)
                     hidden_lb_table_reranker = get_leaderboard_table(
                         hidden_lb_df_reranker, types_qa, visible=False
@@ -345,7 +387,7 @@ with demo:
                     )
                 with gr.TabItem("Reranking Only", id=22):
                     lb_df_reranker_ldoc = leaderboard_df_long_doc[
-                        leaderboard_df_long_doc[COL_NAME_RETRIEVAL_MODEL] == "BM25"
+                        leaderboard_df_long_doc[COL_NAME_RETRIEVAL_MODEL] == BM25_LINK
                         ]
                     lb_df_reranker_ldoc = reset_rank(lb_df_reranker_ldoc)
                     reranking_models_reranker_ldoc = lb_df_reranker_ldoc[COL_NAME_RERANKING_MODEL].apply(remove_html).unique().tolist()
@@ -355,7 +397,7 @@ with demo:
                         with gr.Column(scale=1):
                             search_bar_reranker_ldoc = gr.Textbox(show_label=False, visible=False)
                     lb_table_reranker_ldoc = get_leaderboard_table(lb_df_reranker_ldoc, types_long_doc)
-                    hidden_lb_df_reranker_ldoc = original_df_long_doc[original_df_long_doc[COL_NAME_RETRIEVAL_MODEL] == "BM25"]
+                    hidden_lb_df_reranker_ldoc = original_df_long_doc[original_df_long_doc[COL_NAME_RETRIEVAL_MODEL] == BM25_LINK]
                     hidden_lb_df_reranker_ldoc = reset_rank(hidden_lb_df_reranker_ldoc)
                     hidden_lb_table_reranker_ldoc = get_leaderboard_table(
                         hidden_lb_df_reranker_ldoc, types_long_doc, visible=False
@@ -414,8 +456,8 @@ with demo:
                 with gr.Row():
                     with gr.Column():
                         benchmark_version = gr.Dropdown(
-                            ["AIR-Bench_24.04", ],
-                            value="AIR-Bench_24.04",
+                            BENCHMARK_VERSION_LIST,
+                            value=LATEST_BENCHMARK_VERSION,
                             interactive=True,
                             label="AIR-Bench Version")
                 with gr.Row():
