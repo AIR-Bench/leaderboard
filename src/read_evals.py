@@ -223,6 +223,6 @@ def get_leaderboard_df(raw_data: List[FullEvalResult], task: str, metric: str) -
     # shorten the revision
     df[COL_NAME_REVISION] = df[COL_NAME_REVISION].str[:6]
     
-    # replace "0" with "-" for average score
-    df[COL_NAME_AVG] = df[COL_NAME_AVG].replace(0, "-")
+    # # replace "0" with "-" for average score
+    # df[COL_NAME_AVG] = df[COL_NAME_AVG].replace(0, "-")
     return df
