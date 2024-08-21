@@ -1,5 +1,5 @@
 import os
-from display.formatting import model_hyperlink
+from src.display.formatting import model_hyperlink
 from huggingface_hub import HfApi
 
 # Info to change for your repository
