@@ -501,4 +501,5 @@ if __name__ == "__main__":
     scheduler = BackgroundScheduler()
     scheduler.add_job(restart_space, "interval", seconds=1800)
     scheduler.start()
-    demo.queue(default_concurrency_limit=40).launch()
+    demo.queue(default_concurrency_limit=40)
+    demo.launch()
