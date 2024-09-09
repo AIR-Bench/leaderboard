@@ -497,7 +497,8 @@ with demo:
         with gr.TabItem("📝 About", elem_id="llm-benchmark-tab-table", id=3):
             gr.Markdown(BENCHMARKS_TEXT, elem_classes="markdown-text")
 
-scheduler = BackgroundScheduler()
-scheduler.add_job(restart_space, "interval", seconds=1800)
-scheduler.start()
-demo.queue(default_concurrency_limit=40).launch()
+if __name__ == "__main__":
+    scheduler = BackgroundScheduler()
+    scheduler.add_job(restart_space, "interval", seconds=1800)
+    scheduler.start()
+    demo.queue(default_concurrency_limit=40).launch()
