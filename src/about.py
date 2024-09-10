@@ -24,9 +24,9 @@ BENCHMARKS_TEXT = f"""
 EVALUATION_QUEUE_TEXT = """
 ## Check out the submission steps at [our GitHub repo](https://github.com/AIR-Bench/AIR-Bench/blob/main/docs/submit_to_leaderboard.md)
 
-## You can find the **STATUS of Your Submission** in the [Backend Space](https://huggingface.co/spaces/AIR-Bench/leaderboard_backend). 
+## You can find the **STATUS of Your Submission** at the [Backend Space](https://huggingface.co/spaces/AIR-Bench/leaderboard_backend). 
 
-- If the status is **✔️ Success**, then you can find your results in the [Leaderboard Space](https://huggingface.co/spaces/AIR-Bench/leaderboard).
+- If the status is **✔️ Success**, then you can find your results at the [Leaderboard Space](https://huggingface.co/spaces/AIR-Bench/leaderboard) in no more than one hour.
 - If the status is **❌ Failed**, please check your submission steps and try again. If you have any questions, please feel free to open an issue [here](https://github.com/AIR-Bench/AIR-Bench/issues/new).
 """
 
