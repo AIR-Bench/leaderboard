@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
+from air_benchmark.tasks.tasks import BenchmarkTable
 
 
 def get_safe_name(name: str):
@@ -10,67 +11,6 @@ def get_safe_name(name: str):
         for character in name
         if (character.isalnum() or character == '_'))
 
-
-dataset_dict = {
-    "qa": {
-        "wiki": {
-            "en": ["wikipedia_20240101", ],
-            "zh": ["wikipedia_20240101", ]
-        },
-        "web": {
-            "en": ["mC4", ],
-            "zh": ["mC4", ]
-        },
-        "news": {
-            "en": ["CC-News", ],
-            "zh": ["CC-News", ]
-        },
-        "healthcare": {
-            "en": ["PubMedQA", ],
-            "zh": ["Huatuo-26M", ]
-        },
-        "law": {
-            "en": ["pile-of-law", ],
-             # "zh": ["flk_npc_gov_cn", ]
-        },
-        "finance": {
-            "en": ["Reuters-Financial", ],
-            "zh": ["FinCorpus", ]
-        },
-        "arxiv": {
-            "en": ["Arxiv", ]},
-        "msmarco": {
-            "en": ["MS MARCO", ]},
-    },
-    "long-doc": {
-        "arxiv": {
-            "en": ["gpt3", "llama2", "llm-survey", "gemini"],
-        },
-        "book": {
-            "en": [
-                "origin-of-species_darwin",
-                "a-brief-history-of-time_stephen-hawking"
-            ]
-        },
-        "healthcare": {
-            "en": [
-                "pubmed_100k-200k_1",
-                "pubmed_100k-200k_2",
-                "pubmed_100k-200k_3",
-                "pubmed_40k-50k_5-merged",
-                "pubmed_30k-40k_10-merged"
-            ]
-        },
-        "law": {
-            "en": [
-                "lex_files_300k-400k",
-                "lex_files_400k-500k",
-                "lex_files_500k-600k",
-                "lex_files_600k-700k"
-            ]
-        }
-    }
-}
 
 METRIC_LIST = [
     "ndcg_at_1",
@@ -118,7 +58,7 @@ class Benchmark:
 
 qa_benchmark_dict = {}
 long_doc_benchmark_dict = {}
-for task, domain_dict in dataset_dict.items():
+for task, domain_dict in BenchmarkTable['AIR-Bench_24.04'].items():
     for domain, lang_dict in domain_dict.items():
         for lang, dataset_list in lang_dict.items():
             if task == "qa":

@@ -12,3 +12,4 @@ requests>=2.31.0
 tqdm>=4.65.0
 accelerate>=0.24.1
 socksio>=1.0.0
+air-benchmark>=0.0.4

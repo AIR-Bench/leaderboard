@@ -27,7 +27,7 @@ BM25_LINK = model_hyperlink("https://github.com/castorini/pyserini", "BM25")
 
 BENCHMARK_VERSION_LIST = [
     "AIR-Bench_24.04",
-    # "AIR-Bench_24.05",
+    "AIR-Bench_24.05",
 ]
 
 LATEST_BENCHMARK_VERSION = BENCHMARK_VERSION_LIST[-1]

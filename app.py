@@ -131,303 +131,303 @@ with demo:
     gr.Markdown(INTRODUCTION_TEXT, elem_classes="markdown-text")
 
     with gr.Tabs(elem_classes="tab-buttons") as tabs:
-        with gr.TabItem("QA", elem_id="qa-benchmark-tab-table", id=0):
+        with gr.TabItem("Results", elem_id="results-tab-table"):
             with gr.Row():
-                with gr.Column(min_width=320):
-                    # select domain
-                    with gr.Row():
-                        selected_domains = get_domain_dropdown(DOMAIN_COLS_QA, DOMAIN_COLS_QA)
-                    # select language
-                    with gr.Row():
-                        selected_langs = get_language_dropdown(LANG_COLS_QA, LANG_COLS_QA)
+                selected_version = get_version_dropdown()
 
-                with gr.Column():
-                    with gr.Row():
-                        selected_version = get_version_dropdown()
-                    # select the metric
-                    selected_metric = get_metric_dropdown(METRIC_LIST, DEFAULT_METRIC_QA)
-                    with gr.Row():
-                        show_anonymous = get_anonymous_checkbox()
-                    with gr.Row():
-                        show_revision_and_timestamp = get_revision_and_ts_checkbox()
-            with gr.Tabs(elem_classes="tab-buttons") as sub_tabs:
-                with gr.TabItem("Retrieval + Reranking", id=10):
-                    with gr.Row():
-                        # search retrieval models
-                        with gr.Column():
-                            search_bar = get_search_bar()
-                        # select reranking models
-                        with gr.Column():
-                            selected_rerankings = get_reranking_dropdown(reranking_models)
-                    leaderboard_table = get_leaderboard_table(leaderboard_df_qa, types_qa)
-                    # Dummy leaderboard for handling the case when the user uses backspace key
-                    hidden_leaderboard_table_for_search = get_leaderboard_table(original_df_qa, types_qa, visible=False)
+            with gr.TabItem("QA", elem_id="qa-benchmark-tab-table", id=0):
+                with gr.Row():
+                    with gr.Column(min_width=320):
+                        # select domain
+                        with gr.Row():
+                            selected_domains = get_domain_dropdown(DOMAIN_COLS_QA, DOMAIN_COLS_QA)
+                        # select language
+                        with gr.Row():
+                            selected_langs = get_language_dropdown(LANG_COLS_QA, LANG_COLS_QA)
 
-                    set_listeners(
-                        "qa",
-                        leaderboard_table,
-                        hidden_leaderboard_table_for_search,
-                        search_bar,
-                        selected_domains,
-                        selected_langs,
-                        selected_rerankings,
-                        show_anonymous,
-                        show_revision_and_timestamp,
-                    )
+                    with gr.Column():
+                        # select the metric
+                        selected_metric = get_metric_dropdown(METRIC_LIST, DEFAULT_METRIC_QA)
+                        with gr.Row():
+                            show_anonymous = get_anonymous_checkbox()
+                        with gr.Row():
+                            show_revision_and_timestamp = get_revision_and_ts_checkbox()
+                with gr.Tabs(elem_classes="tab-buttons") as sub_tabs:
+                    with gr.TabItem("Retrieval + Reranking", id=10):
+                        with gr.Row():
+                            # search retrieval models
+                            with gr.Column():
+                                search_bar = get_search_bar()
+                            # select reranking models
+                            with gr.Column():
+                                selected_rerankings = get_reranking_dropdown(reranking_models)
+                        leaderboard_table = get_leaderboard_table(leaderboard_df_qa, types_qa)
+                        # Dummy leaderboard for handling the case when the user uses backspace key
+                        hidden_leaderboard_table_for_search = get_leaderboard_table(original_df_qa, types_qa, visible=False)
 
-                    # set metric listener
-                    selected_metric.change(
-                        update_metric_qa,
-                        [
-                            selected_metric,
+                        set_listeners(
+                            "qa",
+                            leaderboard_table,
+                            hidden_leaderboard_table_for_search,
+                            search_bar,
                             selected_domains,
                             selected_langs,
                             selected_rerankings,
-                            search_bar,
                             show_anonymous,
                             show_revision_and_timestamp,
-                        ],
-                        leaderboard_table,
-                        queue=True
-                    )
-                with gr.TabItem("Retrieval Only", id=11):
-                    with gr.Row():
-                        with gr.Column(scale=1):
-                            search_bar_retriever = get_search_bar()
-                        with gr.Column(scale=1):
-                            selected_noreranker = get_noreranking_dropdown()
-                    lb_df_retriever = leaderboard_df_qa[leaderboard_df_qa[COL_NAME_RERANKING_MODEL] == "NoReranker"]
-                    lb_df_retriever = reset_rank(lb_df_retriever)
-                    lb_table_retriever = get_leaderboard_table(lb_df_retriever, types_qa)
-                    # Dummy leaderboard for handling the case when the user uses backspace key
-                    hidden_lb_df_retriever = original_df_qa[original_df_qa[COL_NAME_RERANKING_MODEL] == "NoReranker"]
-                    hidden_lb_df_retriever = reset_rank(hidden_lb_df_retriever)
-                    hidden_lb_table_retriever = get_leaderboard_table(hidden_lb_df_retriever, types_qa, visible=False)
+                        )
 
-                    set_listeners(
-                        "qa",
-                        lb_table_retriever,
-                        hidden_lb_table_retriever,
-                        search_bar_retriever,
-                        selected_domains,
-                        selected_langs,
-                        selected_noreranker,
-                        show_anonymous,
-                        show_revision_and_timestamp,
-                    )
+                        # set metric listener
+                        selected_metric.change(
+                            update_metric_qa,
+                            [
+                                selected_metric,
+                                selected_domains,
+                                selected_langs,
+                                selected_rerankings,
+                                search_bar,
+                                show_anonymous,
+                                show_revision_and_timestamp,
+                            ],
+                            leaderboard_table,
+                            queue=True
+                        )
+                    with gr.TabItem("Retrieval Only", id=11):
+                        with gr.Row():
+                            with gr.Column(scale=1):
+                                search_bar_retriever = get_search_bar()
+                            with gr.Column(scale=1):
+                                selected_noreranker = get_noreranking_dropdown()
+                        lb_df_retriever = leaderboard_df_qa[leaderboard_df_qa[COL_NAME_RERANKING_MODEL] == "NoReranker"]
+                        lb_df_retriever = reset_rank(lb_df_retriever)
+                        lb_table_retriever = get_leaderboard_table(lb_df_retriever, types_qa)
+                        # Dummy leaderboard for handling the case when the user uses backspace key
+                        hidden_lb_df_retriever = original_df_qa[original_df_qa[COL_NAME_RERANKING_MODEL] == "NoReranker"]
+                        hidden_lb_df_retriever = reset_rank(hidden_lb_df_retriever)
+                        hidden_lb_table_retriever = get_leaderboard_table(hidden_lb_df_retriever, types_qa, visible=False)
 
-                    # set metric listener
-                    selected_metric.change(
-                        update_metric_qa,
-                        [
-                            selected_metric,
+                        set_listeners(
+                            "qa",
+                            lb_table_retriever,
+                            hidden_lb_table_retriever,
+                            search_bar_retriever,
                             selected_domains,
                             selected_langs,
                             selected_noreranker,
-                            search_bar_retriever,
                             show_anonymous,
                             show_revision_and_timestamp,
-                        ],
-                        lb_table_retriever,
-                        queue=True
-                    )
-                with gr.TabItem("Reranking Only", id=12):
-                    lb_df_reranker = leaderboard_df_qa[leaderboard_df_qa[COL_NAME_RETRIEVAL_MODEL] == BM25_LINK]
-                    lb_df_reranker = reset_rank(lb_df_reranker)
-                    reranking_models_reranker = lb_df_reranker[COL_NAME_RERANKING_MODEL].apply(remove_html).unique().tolist()
-                    with gr.Row():
-                        with gr.Column(scale=1):
-                            selected_rerankings_reranker = get_reranking_dropdown(reranking_models_reranker)
-                        with gr.Column(scale=1):
-                            search_bar_reranker = gr.Textbox(show_label=False, visible=False)
-                    lb_table_reranker = get_leaderboard_table(lb_df_reranker, types_qa)
-                    hidden_lb_df_reranker = original_df_qa[original_df_qa[COL_NAME_RETRIEVAL_MODEL] == BM25_LINK]
-                    hidden_lb_df_reranker = reset_rank(hidden_lb_df_reranker)
-                    hidden_lb_table_reranker = get_leaderboard_table(
-                        hidden_lb_df_reranker, types_qa, visible=False
-                    )
+                        )
 
-                    set_listeners(
-                        "qa",
-                        lb_table_reranker,
-                        hidden_lb_table_reranker,
-                        search_bar_reranker,
-                        selected_domains,
-                        selected_langs,
-                        selected_rerankings_reranker,
-                        show_anonymous,
-                        show_revision_and_timestamp,
-                    )
-                    # set metric listener
-                    selected_metric.change(
-                        update_metric_qa,
-                        [
-                            selected_metric,
+                        # set metric listener
+                        selected_metric.change(
+                            update_metric_qa,
+                            [
+                                selected_metric,
+                                selected_domains,
+                                selected_langs,
+                                selected_noreranker,
+                                search_bar_retriever,
+                                show_anonymous,
+                                show_revision_and_timestamp,
+                            ],
+                            lb_table_retriever,
+                            queue=True
+                        )
+                    with gr.TabItem("Reranking Only", id=12):
+                        lb_df_reranker = leaderboard_df_qa[leaderboard_df_qa[COL_NAME_RETRIEVAL_MODEL] == BM25_LINK]
+                        lb_df_reranker = reset_rank(lb_df_reranker)
+                        reranking_models_reranker = lb_df_reranker[COL_NAME_RERANKING_MODEL].apply(remove_html).unique().tolist()
+                        with gr.Row():
+                            with gr.Column(scale=1):
+                                selected_rerankings_reranker = get_reranking_dropdown(reranking_models_reranker)
+                            with gr.Column(scale=1):
+                                search_bar_reranker = gr.Textbox(show_label=False, visible=False)
+                        lb_table_reranker = get_leaderboard_table(lb_df_reranker, types_qa)
+                        hidden_lb_df_reranker = original_df_qa[original_df_qa[COL_NAME_RETRIEVAL_MODEL] == BM25_LINK]
+                        hidden_lb_df_reranker = reset_rank(hidden_lb_df_reranker)
+                        hidden_lb_table_reranker = get_leaderboard_table(
+                            hidden_lb_df_reranker, types_qa, visible=False
+                        )
+
+                        set_listeners(
+                            "qa",
+                            lb_table_reranker,
+                            hidden_lb_table_reranker,
+                            search_bar_reranker,
                             selected_domains,
                             selected_langs,
                             selected_rerankings_reranker,
-                            search_bar_reranker,
                             show_anonymous,
                             show_revision_and_timestamp,
-                        ],
-                        lb_table_reranker,
-                        queue=True
-                    )
-        with gr.TabItem("Long Doc", elem_id="long-doc-benchmark-tab-table", id=1):
-            with gr.Row():
-                with gr.Column(min_width=320):
-                    # select domain
-                    with gr.Row():
-                        selected_domains = get_domain_dropdown(DOMAIN_COLS_LONG_DOC, DOMAIN_COLS_LONG_DOC)
-                    # select language
-                    with gr.Row():
-                        selected_langs = get_language_dropdown(
-                            LANG_COLS_LONG_DOC, LANG_COLS_LONG_DOC
                         )
-                with gr.Column():
-                    with gr.Row():
-                        selected_version = get_version_dropdown()
-                    # select the metric
-                    with gr.Row():
-                        selected_metric = get_metric_dropdown(METRIC_LIST, DEFAULT_METRIC_LONG_DOC)
-                    with gr.Row():
-                        show_anonymous = get_anonymous_checkbox()
-                    with gr.Row():
-                        show_revision_and_timestamp = get_revision_and_ts_checkbox()
-            with gr.Tabs(elem_classes="tab-buttons") as sub_tabs:
-                with gr.TabItem("Retrieval + Reranking", id=20):
-                    with gr.Row():
-                        with gr.Column():
-                            search_bar = get_search_bar()
-                        # select reranking model
-                        with gr.Column():
-                            selected_rerankings = get_reranking_dropdown(reranking_models)
+                        # set metric listener
+                        selected_metric.change(
+                            update_metric_qa,
+                            [
+                                selected_metric,
+                                selected_domains,
+                                selected_langs,
+                                selected_rerankings_reranker,
+                                search_bar_reranker,
+                                show_anonymous,
+                                show_revision_and_timestamp,
+                            ],
+                            lb_table_reranker,
+                            queue=True
+                        )
+            with gr.TabItem("Long Doc", elem_id="long-doc-benchmark-tab-table", id=1):
+                with gr.Row():
+                    with gr.Column(min_width=320):
+                        # select domain
+                        with gr.Row():
+                            selected_domains = get_domain_dropdown(DOMAIN_COLS_LONG_DOC, DOMAIN_COLS_LONG_DOC)
+                        # select language
+                        with gr.Row():
+                            selected_langs = get_language_dropdown(
+                                LANG_COLS_LONG_DOC, LANG_COLS_LONG_DOC
+                            )
+                    with gr.Column():
+                        # select the metric
+                        with gr.Row():
+                            selected_metric = get_metric_dropdown(METRIC_LIST, DEFAULT_METRIC_LONG_DOC)
+                        with gr.Row():
+                            show_anonymous = get_anonymous_checkbox()
+                        with gr.Row():
+                            show_revision_and_timestamp = get_revision_and_ts_checkbox()
+                with gr.Tabs(elem_classes="tab-buttons") as sub_tabs:
+                    with gr.TabItem("Retrieval + Reranking", id=20):
+                        with gr.Row():
+                            with gr.Column():
+                                search_bar = get_search_bar()
+                            # select reranking model
+                            with gr.Column():
+                                selected_rerankings = get_reranking_dropdown(reranking_models)
 
-                    lb_table = get_leaderboard_table(
-                        leaderboard_df_long_doc, types_long_doc
-                    )
+                        lb_table = get_leaderboard_table(
+                            leaderboard_df_long_doc, types_long_doc
+                        )
 
-                    # Dummy leaderboard for handling the case when the user uses backspace key
-                    hidden_lb_table_for_search = get_leaderboard_table(
-                        original_df_long_doc, types_long_doc, visible=False
-                    )
+                        # Dummy leaderboard for handling the case when the user uses backspace key
+                        hidden_lb_table_for_search = get_leaderboard_table(
+                            original_df_long_doc, types_long_doc, visible=False
+                        )
 
-                    set_listeners(
-                        "long-doc",
-                        lb_table,
-                        hidden_lb_table_for_search,
-                        search_bar,
-                        selected_domains,
-                        selected_langs,
-                        selected_rerankings,
-                        show_anonymous,
-                        show_revision_and_timestamp,
-                    )
-
-                    # set metric listener
-                    selected_metric.change(
-                        update_metric_long_doc,
-                        [
-                            selected_metric,
+                        set_listeners(
+                            "long-doc",
+                            lb_table,
+                            hidden_lb_table_for_search,
+                            search_bar,
                             selected_domains,
                             selected_langs,
                             selected_rerankings,
-                            search_bar,
                             show_anonymous,
-                            show_revision_and_timestamp
-                        ],
-                        lb_table,
-                        queue=True
-                    )
-                with gr.TabItem("Retrieval Only", id=21):
-                    with gr.Row():
-                        with gr.Column(scale=1):
-                            search_bar_retriever = get_search_bar()
-                        with gr.Column(scale=1):
-                            selected_noreranker = get_noreranking_dropdown()
-                    lb_df_retriever_long_doc = leaderboard_df_long_doc[
-                        leaderboard_df_long_doc[COL_NAME_RERANKING_MODEL] == "NoReranker"
-                    ]
-                    lb_df_retriever_long_doc = reset_rank(lb_df_retriever_long_doc)
-                    hidden_lb_db_retriever_long_doc = original_df_long_doc[
-                        original_df_long_doc[COL_NAME_RERANKING_MODEL] == "NoReranker"
-                    ]
-                    hidden_lb_db_retriever_long_doc = reset_rank(hidden_lb_db_retriever_long_doc)
-                    lb_table_retriever_long_doc = get_leaderboard_table(
-                        lb_df_retriever_long_doc, types_long_doc)
-                    hidden_lb_table_retriever_long_doc = get_leaderboard_table(
-                        hidden_lb_db_retriever_long_doc, types_long_doc, visible=False
-                    )
+                            show_revision_and_timestamp,
+                        )
 
-                    set_listeners(
-                        "long-doc",
-                        lb_table_retriever_long_doc,
-                        hidden_lb_table_retriever_long_doc,
-                        search_bar_retriever,
-                        selected_domains,
-                        selected_langs,
-                        selected_noreranker,
-                        show_anonymous,
-                        show_revision_and_timestamp,
-                    )
+                        # set metric listener
+                        selected_metric.change(
+                            update_metric_long_doc,
+                            [
+                                selected_metric,
+                                selected_domains,
+                                selected_langs,
+                                selected_rerankings,
+                                search_bar,
+                                show_anonymous,
+                                show_revision_and_timestamp
+                            ],
+                            lb_table,
+                            queue=True
+                        )
+                    with gr.TabItem("Retrieval Only", id=21):
+                        with gr.Row():
+                            with gr.Column(scale=1):
+                                search_bar_retriever = get_search_bar()
+                            with gr.Column(scale=1):
+                                selected_noreranker = get_noreranking_dropdown()
+                        lb_df_retriever_long_doc = leaderboard_df_long_doc[
+                            leaderboard_df_long_doc[COL_NAME_RERANKING_MODEL] == "NoReranker"
+                        ]
+                        lb_df_retriever_long_doc = reset_rank(lb_df_retriever_long_doc)
+                        hidden_lb_db_retriever_long_doc = original_df_long_doc[
+                            original_df_long_doc[COL_NAME_RERANKING_MODEL] == "NoReranker"
+                        ]
+                        hidden_lb_db_retriever_long_doc = reset_rank(hidden_lb_db_retriever_long_doc)
+                        lb_table_retriever_long_doc = get_leaderboard_table(
+                            lb_df_retriever_long_doc, types_long_doc)
+                        hidden_lb_table_retriever_long_doc = get_leaderboard_table(
+                            hidden_lb_db_retriever_long_doc, types_long_doc, visible=False
+                        )
 
-                    selected_metric.change(
-                        update_metric_long_doc,
-                        [
-                            selected_metric,
+                        set_listeners(
+                            "long-doc",
+                            lb_table_retriever_long_doc,
+                            hidden_lb_table_retriever_long_doc,
+                            search_bar_retriever,
                             selected_domains,
                             selected_langs,
                             selected_noreranker,
-                            search_bar_retriever,
                             show_anonymous,
                             show_revision_and_timestamp,
-                        ],
-                        lb_table_retriever_long_doc,
-                        queue=True
-                    )
-                with gr.TabItem("Reranking Only", id=22):
-                    lb_df_reranker_ldoc = leaderboard_df_long_doc[
-                        leaderboard_df_long_doc[COL_NAME_RETRIEVAL_MODEL] == BM25_LINK
-                        ]
-                    lb_df_reranker_ldoc = reset_rank(lb_df_reranker_ldoc)
-                    reranking_models_reranker_ldoc = lb_df_reranker_ldoc[COL_NAME_RERANKING_MODEL].apply(remove_html).unique().tolist()
-                    with gr.Row():
-                        with gr.Column(scale=1):
-                            selected_rerankings_reranker_ldoc = get_reranking_dropdown(reranking_models_reranker_ldoc)
-                        with gr.Column(scale=1):
-                            search_bar_reranker_ldoc = gr.Textbox(show_label=False, visible=False)
-                    lb_table_reranker_ldoc = get_leaderboard_table(lb_df_reranker_ldoc, types_long_doc)
-                    hidden_lb_df_reranker_ldoc = original_df_long_doc[original_df_long_doc[COL_NAME_RETRIEVAL_MODEL] == BM25_LINK]
-                    hidden_lb_df_reranker_ldoc = reset_rank(hidden_lb_df_reranker_ldoc)
-                    hidden_lb_table_reranker_ldoc = get_leaderboard_table(
-                        hidden_lb_df_reranker_ldoc, types_long_doc, visible=False
-                    )
+                        )
 
-                    set_listeners(
-                        "long-doc",
-                        lb_table_reranker_ldoc,
-                        hidden_lb_table_reranker_ldoc,
-                        search_bar_reranker_ldoc,
-                        selected_domains,
-                        selected_langs,
-                        selected_rerankings_reranker_ldoc,
-                        show_anonymous,
-                        show_revision_and_timestamp,
-                    )
-                    selected_metric.change(
-                        update_metric_long_doc,
-                        [
-                            selected_metric,
+                        selected_metric.change(
+                            update_metric_long_doc,
+                            [
+                                selected_metric,
+                                selected_domains,
+                                selected_langs,
+                                selected_noreranker,
+                                search_bar_retriever,
+                                show_anonymous,
+                                show_revision_and_timestamp,
+                            ],
+                            lb_table_retriever_long_doc,
+                            queue=True
+                        )
+                    with gr.TabItem("Reranking Only", id=22):
+                        lb_df_reranker_ldoc = leaderboard_df_long_doc[
+                            leaderboard_df_long_doc[COL_NAME_RETRIEVAL_MODEL] == BM25_LINK
+                            ]
+                        lb_df_reranker_ldoc = reset_rank(lb_df_reranker_ldoc)
+                        reranking_models_reranker_ldoc = lb_df_reranker_ldoc[COL_NAME_RERANKING_MODEL].apply(remove_html).unique().tolist()
+                        with gr.Row():
+                            with gr.Column(scale=1):
+                                selected_rerankings_reranker_ldoc = get_reranking_dropdown(reranking_models_reranker_ldoc)
+                            with gr.Column(scale=1):
+                                search_bar_reranker_ldoc = gr.Textbox(show_label=False, visible=False)
+                        lb_table_reranker_ldoc = get_leaderboard_table(lb_df_reranker_ldoc, types_long_doc)
+                        hidden_lb_df_reranker_ldoc = original_df_long_doc[original_df_long_doc[COL_NAME_RETRIEVAL_MODEL] == BM25_LINK]
+                        hidden_lb_df_reranker_ldoc = reset_rank(hidden_lb_df_reranker_ldoc)
+                        hidden_lb_table_reranker_ldoc = get_leaderboard_table(
+                            hidden_lb_df_reranker_ldoc, types_long_doc, visible=False
+                        )
+
+                        set_listeners(
+                            "long-doc",
+                            lb_table_reranker_ldoc,
+                            hidden_lb_table_reranker_ldoc,
+                            search_bar_reranker_ldoc,
                             selected_domains,
                             selected_langs,
                             selected_rerankings_reranker_ldoc,
-                            search_bar_reranker_ldoc,
                             show_anonymous,
                             show_revision_and_timestamp,
-                        ],
-                        lb_table_reranker_ldoc,
-                        queue=True
-                    )
+                        )
+                        selected_metric.change(
+                            update_metric_long_doc,
+                            [
+                                selected_metric,
+                                selected_domains,
+                                selected_langs,
+                                selected_rerankings_reranker_ldoc,
+                                search_bar_reranker_ldoc,
+                                show_anonymous,
+                                show_revision_and_timestamp,
+                            ],
+                            lb_table_reranker_ldoc,
+                            queue=True
+                        )
 
         with gr.TabItem("🚀Submit here!", elem_id="submit-tab-table", id=2):
             with gr.Column():
