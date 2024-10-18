@@ -1,92 +1,71 @@
 from dataclasses import dataclass
 from enum import Enum
+
 from air_benchmark.tasks.tasks import BenchmarkTable
 
-
-def get_safe_name(name: str):
-    """Get RFC 1123 compatible safe name"""
-    name = name.replace('-', '_')
-    return ''.join(
-        character.lower()
-        for character in name
-        if (character.isalnum() or character == '_'))
-
-
-METRIC_LIST = [
-    "ndcg_at_1",
-    "ndcg_at_3",
-    "ndcg_at_5",
-    "ndcg_at_10",
-    "ndcg_at_100",
-    "ndcg_at_1000",
-    "map_at_1",
-    "map_at_3",
-    "map_at_5",
-    "map_at_10",
-    "map_at_100",
-    "map_at_1000",
-    "recall_at_1",
-    "recall_at_3",
-    "recall_at_5",
-    "recall_at_10",
-    "recall_at_100",
-    "recall_at_1000",
-    "precision_at_1",
-    "precision_at_3",
-    "precision_at_5",
-    "precision_at_10",
-    "precision_at_100",
-    "precision_at_1000",
-    "mrr_at_1",
-    "mrr_at_3",
-    "mrr_at_5",
-    "mrr_at_10",
-    "mrr_at_100",
-    "mrr_at_1000"
-]
+from src.envs import BENCHMARK_VERSION_LIST, METRIC_LIST
+from src.models import TaskType, get_safe_name
 
 
 @dataclass
 class Benchmark:
     name: str  # [domain]_[language]_[metric], task_key in the json file,
-    metric: str  # ndcg_at_1 ,metric_key in the json file
+    metric: str  # metric_key in the json file
     col_name: str  # [domain]_[language], name to display in the leaderboard
     domain: str
     lang: str
     task: str
 
 
-qa_benchmark_dict = {}
-long_doc_benchmark_dict = {}
-for task, domain_dict in BenchmarkTable['AIR-Bench_24.04'].items():
-    for domain, lang_dict in domain_dict.items():
-        for lang, dataset_list in lang_dict.items():
-            if task == "qa":
-                benchmark_name = f"{domain}_{lang}"
-                benchmark_name = get_safe_name(benchmark_name)
+# create a function return an enum class containing all the benchmarks
+def get_qa_benchmarks_dict(version: str):
+    benchmark_dict = {}
+    for task, domain_dict in BenchmarkTable[version].items():
+        if task != TaskType.qa.value:
+            continue
+        for domain, lang_dict in domain_dict.items():
+            for lang, dataset_list in lang_dict.items():
+                benchmark_name = get_safe_name(f"{domain}_{lang}")
                 col_name = benchmark_name
                 for metric in dataset_list:
-                    qa_benchmark_dict[benchmark_name] = Benchmark(benchmark_name, metric, col_name, domain, lang, task)
-            elif task == "long-doc":
+                    if "test" not in dataset_list[metric]["splits"]:
+                        continue
+                    benchmark_dict[benchmark_name] = Benchmark(benchmark_name, metric, col_name, domain, lang, task)
+    return benchmark_dict
+
+
+def get_doc_benchmarks_dict(version: str):
+    benchmark_dict = {}
+    for task, domain_dict in BenchmarkTable[version].items():
+        if task != TaskType.long_doc.value:
+            continue
+        for domain, lang_dict in domain_dict.items():
+            for lang, dataset_list in lang_dict.items():
                 for dataset in dataset_list:
                     benchmark_name = f"{domain}_{lang}_{dataset}"
                     benchmark_name = get_safe_name(benchmark_name)
                     col_name = benchmark_name
+                    if "test" not in dataset_list[dataset]["splits"]:
+                        continue
                     for metric in METRIC_LIST:
-                        long_doc_benchmark_dict[benchmark_name] = Benchmark(benchmark_name, metric, col_name, domain,
-                                                                            lang, task)
+                        benchmark_dict[benchmark_name] = Benchmark(
+                            benchmark_name, metric, col_name, domain, lang, task
+                        )
+    return benchmark_dict
 
-BenchmarksQA = Enum('BenchmarksQA', qa_benchmark_dict)
-BenchmarksLongDoc = Enum('BenchmarksLongDoc', long_doc_benchmark_dict)
 
-BENCHMARK_COLS_QA = [c.col_name for c in qa_benchmark_dict.values()]
-BENCHMARK_COLS_LONG_DOC = [c.col_name for c in long_doc_benchmark_dict.values()]
+_qa_benchmark_dict = {}
+for version in BENCHMARK_VERSION_LIST:
+    safe_version_name = get_safe_name(version)
+    _qa_benchmark_dict[safe_version_name] = Enum(f"QABenchmarks_{safe_version_name}", get_qa_benchmarks_dict(version))
 
-DOMAIN_COLS_QA = list(frozenset([c.domain for c in qa_benchmark_dict.values()]))
-LANG_COLS_QA = list(frozenset([c.lang for c in qa_benchmark_dict.values()]))
+_doc_benchmark_dict = {}
+for version in BENCHMARK_VERSION_LIST:
+    safe_version_name = get_safe_name(version)
+    _doc_benchmark_dict[safe_version_name] = Enum(
+        f"LongDocBenchmarks_{safe_version_name}", get_doc_benchmarks_dict(version)
+    )
 
-DOMAIN_COLS_LONG_DOC = list(frozenset([c.domain for c in long_doc_benchmark_dict.values()]))
-LANG_COLS_LONG_DOC = list(frozenset([c.lang for c in long_doc_benchmark_dict.values()]))
 
-DEFAULT_METRIC_QA = "ndcg_at_10"
-DEFAULT_METRIC_LONG_DOC = "recall_at_10"
+QABenchmarks = Enum("QABenchmarks", _qa_benchmark_dict)
+LongDocBenchmarks = Enum("LongDocBenchmarks", _doc_benchmark_dict)

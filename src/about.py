@@ -8,7 +8,7 @@ INTRODUCTION_TEXT = """
 """
 
 # Which evaluations are you running? how can people reproduce what you have?
-BENCHMARKS_TEXT = f"""
+BENCHMARKS_TEXT = """
 ## How the test data are generated?
 ### Find more information at [our GitHub repo](https://github.com/AIR-Bench/AIR-Bench/blob/main/docs/data_generation.md)
 
