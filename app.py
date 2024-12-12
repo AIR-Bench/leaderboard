@@ -110,10 +110,11 @@ def update_doc_metric(
 def update_datastore(version):
     global datastore
     global ds_dict
-    print(f"current data version: {datastore.version}")
     if datastore.version != version:
-        print(f"reload data version: {version}")
+        print(f"updated data version: {datastore.version} -> {version}")
         datastore = ds_dict[version]
+    else:
+        print(f"current data version: {datastore.version}")
     return datastore
 
 def update_qa_domains(version):
@@ -215,17 +216,6 @@ def update_doc_hidden_df_rerank(version):
     datastore = update_datastore(version)
     df_rerank_hidden = filter_df_rerank(datastore.doc_raw_df)
     return get_leaderboard_table(df_rerank_hidden, datastore.doc_types, visible=False)
-
-# def update_doc_version(version):
-#     global datastore
-#     global ds_dict
-#     datastore = ds_dict[version]
-#     # domain_elem = get_domain_dropdown(LongDocBenchmarks[datastore.slug])
-#     # lang_elem = get_language_dropdown(LongDocBenchmarks[datastore.slug])
-#     # model_elem = get_reranking_dropdown(datastore.reranking_models)
-#     df_elem = get_leaderboard_table(datastore.doc_fmt_df, datastore.doc_types)
-#     hidden_df_elem = get_leaderboard_table(datastore.doc_raw_df, datastore.doc_types, visible=False)
-#     return domain_elem, lang_elem, model_elem, df_elem, hidden_df_elem
 
 
 demo = gr.Blocks(css=custom_css)
@@ -330,10 +320,7 @@ with demo:
                                     version,
                                     models_ret
                                 )
-
-                        _qa_df_ret = datastore.qa_fmt_df[
-                            datastore.qa_fmt_df[COL_NAME_RERANKING_MODEL] == "NoReranker"]
-                        _qa_df_ret = reset_rank(_qa_df_ret)
+                        _qa_df_ret = filter_df_ret(datastore.qa_fmt_df)
                         qa_df_elem_ret = get_leaderboard_table(_qa_df_ret, datastore.qa_types)
                         version.change(
                             update_qa_df_ret,
@@ -342,14 +329,10 @@ with demo:
                         )
 
                         # Dummy leaderboard for handling the case when the user uses backspace key
-                        _qa_df_ret_hidden = datastore.qa_raw_df[
-                            datastore.qa_raw_df[COL_NAME_RERANKING_MODEL] == "NoReranker"
-                        ]
-                        _qa_df_ret_hidden = reset_rank(_qa_df_ret_hidden)
+                        _qa_df_ret_hidden = filter_df_ret(datastore.qa_raw_df)
                         qa_df_elem_ret_hidden = get_leaderboard_table(
                             _qa_df_ret_hidden, datastore.qa_types, visible=False
                         )
-
                         version.change(
                             update_qa_hidden_df_ret,
                             version,
@@ -385,8 +368,7 @@ with demo:
                         )
 
                     with gr.TabItem("Reranking Only", id=12):
-                        _qa_df_rerank = datastore.qa_fmt_df[datastore.qa_fmt_df[COL_NAME_RETRIEVAL_MODEL] == BM25_LINK]
-                        _qa_df_rerank = reset_rank(_qa_df_rerank)
+                        _qa_df_rerank = filter_df_rerank(datastore.qa_fmt_df)
                         qa_rerank_models = _qa_df_rerank[COL_NAME_RERANKING_MODEL].apply(remove_html).unique().tolist()
                         with gr.Row():
                             with gr.Column(scale=1):
@@ -405,10 +387,7 @@ with demo:
                             qa_df_elem_rerank
                         )
 
-                        _qa_df_rerank_hidden = datastore.qa_raw_df[
-                            datastore.qa_raw_df[COL_NAME_RETRIEVAL_MODEL] == BM25_LINK
-                        ]
-                        _qa_df_rerank_hidden = reset_rank(_qa_df_rerank_hidden)
+                        _qa_df_rerank_hidden = filter_df_rerank(datastore.qa_raw_df)
                         qa_df_elem_rerank_hidden = get_leaderboard_table(
                             _qa_df_rerank_hidden, datastore.qa_types, visible=False
                         )
