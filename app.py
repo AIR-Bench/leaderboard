@@ -107,6 +107,7 @@ def update_doc_metric(
         show_revision_and_timestamp,
     )
 
+
 def update_datastore(version):
     global datastore
     global ds_dict
@@ -116,6 +117,7 @@ def update_datastore(version):
     else:
         print(f"current data version: {datastore.version}")
     return datastore
+
 
 def update_qa_domains(version):
     datastore = update_datastore(version)
@@ -128,6 +130,7 @@ def update_doc_domains(version):
     domain_elem = get_domain_dropdown(LongDocBenchmarks[datastore.slug])
     return domain_elem
 
+
 def update_qa_langs(version):
     datastore = update_datastore(version)
     lang_elem = get_language_dropdown(QABenchmarks[datastore.slug])
@@ -139,6 +142,7 @@ def update_doc_langs(version):
     lang_elem = get_language_dropdown(LongDocBenchmarks[datastore.slug])
     return lang_elem
 
+
 def update_qa_models(version):
     datastore = update_datastore(version)
     model_elem = get_reranking_dropdown(datastore.reranking_models)
@@ -148,6 +152,7 @@ def update_qa_models(version):
 def update_qa_df_ret_rerank(version):
     datastore = update_datastore(version)
     return get_leaderboard_table(datastore.qa_fmt_df, datastore.qa_types)
+
 
 def update_qa_hidden_df_ret_rerank(version):
     datastore = update_datastore(version)
@@ -168,6 +173,7 @@ def filter_df_ret(df):
     df_ret = df[df[COL_NAME_RERANKING_MODEL] == "NoReranker"]
     df_ret = reset_rank(df_ret)
     return df_ret
+
 
 def update_qa_df_ret(version):
     datastore = update_datastore(version)
@@ -192,25 +198,30 @@ def update_doc_hidden_df_ret(version):
     df_ret_hidden = filter_df_ret(datastore.doc_raw_df)
     return get_leaderboard_table(df_ret_hidden, datastore.doc_types, visible=False)
 
+
 def filter_df_rerank(df):
     df_rerank = df[df[COL_NAME_RETRIEVAL_MODEL] == BM25_LINK]
     df_rerank = reset_rank(df_rerank)
     return df_rerank
+
 
 def update_qa_df_rerank(version):
     datastore = update_datastore(version)
     df_rerank = filter_df_rerank(datastore.qa_fmt_df)
     return get_leaderboard_table(df_rerank, datastore.qa_types)
 
+
 def update_qa_hidden_df_rerank(version):
     datastore = update_datastore(version)
     df_rerank_hidden = filter_df_rerank(datastore.qa_raw_df)
     return get_leaderboard_table(df_rerank_hidden, datastore.qa_types, visible=False)
 
+
 def update_doc_df_rerank(version):
     datastore = update_datastore(version)
     df_rerank = filter_df_rerank(datastore.doc_fmt_df)
     return get_leaderboard_table(df_rerank, datastore.doc_types)
+
 
 def update_doc_hidden_df_rerank(version):
     datastore = update_datastore(version)
@@ -237,19 +248,11 @@ with demo:
                         # select domain
                         with gr.Row():
                             domains = get_domain_dropdown(QABenchmarks[datastore.slug])
-                            version.change(
-                                update_qa_domains,
-                                version,
-                                domains
-                            )
+                            version.change(update_qa_domains, version, domains)
                         # select language
                         with gr.Row():
                             langs = get_language_dropdown(QABenchmarks[datastore.slug])
-                            version.change(
-                                update_qa_langs,
-                                version,
-                                langs
-                            )
+                            version.change(update_qa_langs, version, langs)
                     with gr.Column():
                         # select the metric
                         metric = get_metric_dropdown(METRIC_LIST, DEFAULT_METRIC_QA)
@@ -266,27 +269,15 @@ with demo:
                             # select reranking models
                             with gr.Column():
                                 models = get_reranking_dropdown(datastore.reranking_models)
-                                version.change(
-                                    update_qa_models,
-                                    version,
-                                    models
-                                )
+                                version.change(update_qa_models, version, models)
                         #  shown_table
                         qa_df_elem_ret_rerank = get_leaderboard_table(datastore.qa_fmt_df, datastore.qa_types)
-                        version.change(
-                            update_qa_df_ret_rerank,
-                            version,
-                            qa_df_elem_ret_rerank
-                        )
+                        version.change(update_qa_df_ret_rerank, version, qa_df_elem_ret_rerank)
                         # Dummy leaderboard for handling the case when the user uses backspace key
                         qa_df_elem_ret_rerank_hidden = get_leaderboard_table(
                             datastore.qa_raw_df, datastore.qa_types, visible=False
                         )
-                        version.change(
-                            update_qa_hidden_df_ret_rerank,
-                            version,
-                            qa_df_elem_ret_rerank_hidden
-                        )
+                        version.change(update_qa_hidden_df_ret_rerank, version, qa_df_elem_ret_rerank_hidden)
 
                         set_listeners(
                             TaskType.qa,
@@ -315,29 +306,17 @@ with demo:
                                 search_bar_ret = get_search_bar()
                             with gr.Column(scale=1):
                                 models_ret = get_noreranking_dropdown()
-                                version.change(
-                                    update_qa_models,
-                                    version,
-                                    models_ret
-                                )
+                                version.change(update_qa_models, version, models_ret)
                         _qa_df_ret = filter_df_ret(datastore.qa_fmt_df)
                         qa_df_elem_ret = get_leaderboard_table(_qa_df_ret, datastore.qa_types)
-                        version.change(
-                            update_qa_df_ret,
-                            version,
-                            qa_df_elem_ret
-                        )
+                        version.change(update_qa_df_ret, version, qa_df_elem_ret)
 
                         # Dummy leaderboard for handling the case when the user uses backspace key
                         _qa_df_ret_hidden = filter_df_ret(datastore.qa_raw_df)
                         qa_df_elem_ret_hidden = get_leaderboard_table(
                             _qa_df_ret_hidden, datastore.qa_types, visible=False
                         )
-                        version.change(
-                            update_qa_hidden_df_ret,
-                            version,
-                            qa_df_elem_ret_hidden
-                        )
+                        version.change(update_qa_hidden_df_ret, version, qa_df_elem_ret_hidden)
 
                         set_listeners(
                             TaskType.qa,
@@ -373,29 +352,17 @@ with demo:
                         with gr.Row():
                             with gr.Column(scale=1):
                                 qa_models_rerank = get_reranking_dropdown(qa_rerank_models)
-                                version.change(
-                                    update_qa_models,
-                                    version,
-                                    qa_models_rerank
-                                )
+                                version.change(update_qa_models, version, qa_models_rerank)
                             with gr.Column(scale=1):
                                 qa_search_bar_rerank = gr.Textbox(show_label=False, visible=False)
                         qa_df_elem_rerank = get_leaderboard_table(_qa_df_rerank, datastore.qa_types)
-                        version.change(
-                            update_qa_df_rerank,
-                            version,
-                            qa_df_elem_rerank
-                        )
+                        version.change(update_qa_df_rerank, version, qa_df_elem_rerank)
 
                         _qa_df_rerank_hidden = filter_df_rerank(datastore.qa_raw_df)
                         qa_df_elem_rerank_hidden = get_leaderboard_table(
                             _qa_df_rerank_hidden, datastore.qa_types, visible=False
                         )
-                        version.change(
-                            update_qa_hidden_df_rerank,
-                            version,
-                            qa_df_elem_rerank_hidden
-                        )
+                        version.change(update_qa_hidden_df_rerank, version, qa_df_elem_rerank_hidden)
 
                         set_listeners(
                             TaskType.qa,
@@ -430,19 +397,11 @@ with demo:
                         # select domain
                         with gr.Row():
                             domains = get_domain_dropdown(LongDocBenchmarks[datastore.slug])
-                            version.change(
-                                update_doc_domains,
-                                version,
-                                domains
-                            )
+                            version.change(update_doc_domains, version, domains)
                         # select language
                         with gr.Row():
                             langs = get_language_dropdown(LongDocBenchmarks[datastore.slug])
-                            version.change(
-                                update_doc_langs,
-                                version,
-                                langs
-                            )
+                            version.change(update_doc_langs, version, langs)
                     with gr.Column():
                         # select the metric
                         with gr.Row():
@@ -458,29 +417,17 @@ with demo:
                                 search_bar = get_search_bar()
                             with gr.Column():
                                 models = get_reranking_dropdown(datastore.reranking_models)
-                                version.change(
-                                    update_qa_models,
-                                    version,
-                                    models
-                                )
+                                version.change(update_qa_models, version, models)
 
                         doc_df_elem_ret_rerank = get_leaderboard_table(datastore.doc_fmt_df, datastore.doc_types)
 
-                        version.change(
-                            update_doc_df_ret_rerank,
-                            version,
-                            doc_df_elem_ret_rerank
-                        )
+                        version.change(update_doc_df_ret_rerank, version, doc_df_elem_ret_rerank)
 
                         doc_df_elem_ret_rerank_hidden = get_leaderboard_table(
                             datastore.doc_raw_df, datastore.doc_types, visible=False
                         )
 
-                        version.change(
-                            update_doc_hidden_df_ret_rerank,
-                            version,
-                            doc_df_elem_ret_rerank_hidden
-                        )
+                        version.change(update_doc_hidden_df_ret_rerank, version, doc_df_elem_ret_rerank_hidden)
 
                         set_listeners(
                             TaskType.long_doc,
@@ -518,21 +465,13 @@ with demo:
                                 models_ret = get_noreranking_dropdown()
                         _doc_df_ret = filter_df_ret(datastore.doc_fmt_df)
                         doc_df_elem_ret = get_leaderboard_table(_doc_df_ret, datastore.doc_types)
-                        version.change(
-                            update_doc_df_ret,
-                            version,
-                            doc_df_elem_ret
-                        )
+                        version.change(update_doc_df_ret, version, doc_df_elem_ret)
 
                         _doc_df_ret_hidden = filter_df_ret(datastore.doc_raw_df)
                         doc_df_elem_ret_hidden = get_leaderboard_table(
                             _doc_df_ret_hidden, datastore.doc_types, visible=False
                         )
-                        version.change(
-                            update_doc_hidden_df_ret,
-                            version,
-                            doc_df_elem_ret_hidden
-                        )
+                        version.change(update_doc_hidden_df_ret, version, doc_df_elem_ret_hidden)
 
                         set_listeners(
                             TaskType.long_doc,
@@ -572,22 +511,14 @@ with demo:
                             with gr.Column(scale=1):
                                 doc_search_bar_rerank = gr.Textbox(show_label=False, visible=False)
                         doc_df_elem_rerank = get_leaderboard_table(_doc_df_rerank, datastore.doc_types)
-                        version.change(
-                            update_doc_df_rerank,
-                            version,
-                            doc_df_elem_rerank
-                        )
+                        version.change(update_doc_df_rerank, version, doc_df_elem_rerank)
 
                         _doc_df_rerank_hidden = filter_df_rerank(datastore.doc_raw_df)
                         doc_df_elem_rerank_hidden = get_leaderboard_table(
                             _doc_df_rerank_hidden, datastore.doc_types, visible=False
                         )
 
-                        version.change(
-                            update_doc_hidden_df_rerank,
-                            version,
-                            doc_df_elem_rerank_hidden
-                        )
+                        version.change(update_doc_hidden_df_rerank, version, doc_df_elem_rerank_hidden)
 
                         set_listeners(
                             TaskType.long_doc,
