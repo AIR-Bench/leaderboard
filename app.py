@@ -42,7 +42,7 @@ def restart_space():
 
 
 try:
-    if not os.environ.get("LOCAL_MODE", False):
+    if os.environ.get("LOCAL_MODE", False):
         print("Running in local mode")
         snapshot_download(
             repo_id=RESULTS_REPO,
