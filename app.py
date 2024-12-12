@@ -43,7 +43,7 @@ def restart_space():
 
 try:
     if os.environ.get("LOCAL_MODE", False):
-        print("Running in local mode")
+        print("Loading the data")
         snapshot_download(
             repo_id=RESULTS_REPO,
             local_dir=EVAL_RESULTS_PATH,
@@ -52,6 +52,8 @@ try:
             etag_timeout=30,
             token=TOKEN,
         )
+    else:
+        print("Running in local mode")
 except Exception:
     print("failed to download")
     restart_space()
