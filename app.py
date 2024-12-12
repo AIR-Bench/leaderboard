@@ -135,59 +135,43 @@ def update_qa_models(version):
 
 def update_qa_df_ret_rerank(version):
     datastore = update_datastore(version)
-    df_elem = get_leaderboard_table(datastore.qa_fmt_df, datastore.qa_types)
-    return df_elem
-
-def update_qa_df_ret(version):
-    datastore = update_datastore(version)
-    _qa_df_ret = datastore.qa_fmt_df[
-        datastore.qa_fmt_df[COL_NAME_RERANKING_MODEL] == "NoReranker"]
-    _qa_df_ret = reset_rank(_qa_df_ret)
-    df_elem_ret = get_leaderboard_table(_qa_df_ret, datastore.qa_types)
-    return df_elem_ret
-
-def update_qa_df_rerank(version):
-    datastore = update_datastore(version)
-    _qa_df_rerank = datastore.qa_fmt_df[datastore.qa_fmt_df[COL_NAME_RETRIEVAL_MODEL] == BM25_LINK]
-    _qa_df_rerank = reset_rank(_qa_df_rerank)
-    df_elem_ret = get_leaderboard_table(_qa_df_rerank, datastore.qa_types)
-    return df_elem_ret
-
-def update_qa_hidden_df_rerank(version):
-    datastore = update_datastore(version)
-    _qa_df_rerank_hidden = datastore.qa_raw_df[
-        datastore.qa_raw_df[COL_NAME_RETRIEVAL_MODEL] == BM25_LINK
-        ]
-    _qa_df_rerank_hidden = reset_rank(_qa_df_rerank_hidden)
-    hidden_df_elem = get_leaderboard_table(
-        _qa_df_rerank_hidden, datastore.qa_types, visible=False
-    )
-    return hidden_df_elem
-
-def update_qa_hidden_df_ret(version):
-    datastore = update_datastore(version)
-    _qa_df_ret_hidden = datastore.qa_raw_df[
-        datastore.qa_raw_df[COL_NAME_RERANKING_MODEL] == "NoReranker"
-        ]
-    _qa_df_ret_hidden = reset_rank(_qa_df_ret_hidden)
-    hidden_df_elem = get_leaderboard_table(_qa_df_ret_hidden, datastore.qa_types, visible=False)
-    return hidden_df_elem
+    return get_leaderboard_table(datastore.qa_fmt_df, datastore.qa_types)
 
 def update_qa_hidden_df_ret_rerank(version):
     datastore = update_datastore(version)
-    hidden_df_elem = get_leaderboard_table(datastore.qa_raw_df, datastore.qa_types, visible=False)
-    return hidden_df_elem
+    return get_leaderboard_table(datastore.qa_raw_df, datastore.qa_types, visible=False)
 
-# def update_qa_version(version):
-#     global datastore
-#     global ds_dict
-#     datastore = ds_dict[version]
-#     # domain_elem = get_domain_dropdown(QABenchmarks[datastore.slug])
-#     # lang_elem = get_language_dropdown(QABenchmarks[datastore.slug])
-#     # model_elem = get_reranking_dropdown(datastore.reranking_models)
-#     df_elem = get_leaderboard_table(datastore.qa_fmt_df, datastore.qa_types)
-#     hidden_df_elem = get_leaderboard_table(datastore.qa_raw_df, datastore.qa_types, visible=False)
-#     return model_elem, df_elem, hidden_df_elem
+
+def filter_df_ret(df):
+    df_ret = df[df[COL_NAME_RERANKING_MODEL] == "NoReranker"]
+    df_ret = reset_rank(df_ret)
+    return df_ret
+
+def update_qa_df_ret(version):
+    datastore = update_datastore(version)
+    df_ret = filter_df_ret(datastore.qa_fmt_df)
+    return get_leaderboard_table(df_ret, datastore.qa_types)
+
+def update_qa_hidden_df_ret(version):
+    datastore = update_datastore(version)
+    df_ret_hidden = filter_df_ret(datastore.qa_raw_df)
+    return get_leaderboard_table(df_ret_hidden, datastore.qa_types, visible=False)
+
+
+def filter_df_rerank(df):
+    df_rerank = df[df[COL_NAME_RETRIEVAL_MODEL] == BM25_LINK]
+    df_rerank = reset_rank(df_rerank)
+    return df_rerank
+
+def update_qa_df_rerank(version):
+    datastore = update_datastore(version)
+    df_rerank = filter_df_rerank(datastore.qa_fmt_df)
+    return get_leaderboard_table(df_rerank, datastore.qa_types)
+
+def update_qa_hidden_df_rerank(version):
+    datastore = update_datastore(version)
+    df_rerank_hidden = filter_df_rerank(datastore.qa_raw_df)
+    return get_leaderboard_table(df_rerank_hidden, datastore.qa_types, visible=False)
 
 
 def update_doc_version(version):
