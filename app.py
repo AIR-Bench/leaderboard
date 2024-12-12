@@ -107,17 +107,87 @@ def update_doc_metric(
         show_revision_and_timestamp,
     )
 
-
-def update_qa_version(version):
+def update_datastore(version):
     global datastore
     global ds_dict
-    datastore = ds_dict[version]
+    print(f"current data version: {datastore.version}")
+    if datastore.version != version:
+        print(f"reload data version: {version}")
+        datastore = ds_dict[version]
+    return datastore
+
+def update_qa_domains(version):
+    datastore = update_datastore(version)
     domain_elem = get_domain_dropdown(QABenchmarks[datastore.slug])
+    return domain_elem
+
+
+def update_qa_langs(version):
+    datastore = update_datastore(version)
     lang_elem = get_language_dropdown(QABenchmarks[datastore.slug])
+    return lang_elem
+
+
+def update_qa_models(version):
+    datastore = update_datastore(version)
     model_elem = get_reranking_dropdown(datastore.reranking_models)
+    return model_elem
+
+def update_qa_df_ret_rerank(version):
+    datastore = update_datastore(version)
     df_elem = get_leaderboard_table(datastore.qa_fmt_df, datastore.qa_types)
+    return df_elem
+
+def update_qa_df_ret(version):
+    datastore = update_datastore(version)
+    _qa_df_ret = datastore.qa_fmt_df[
+        datastore.qa_fmt_df[COL_NAME_RERANKING_MODEL] == "NoReranker"]
+    _qa_df_ret = reset_rank(_qa_df_ret)
+    df_elem_ret = get_leaderboard_table(_qa_df_ret, datastore.qa_types)
+    return df_elem_ret
+
+def update_qa_df_rerank(version):
+    datastore = update_datastore(version)
+    _qa_df_rerank = datastore.qa_fmt_df[datastore.qa_fmt_df[COL_NAME_RETRIEVAL_MODEL] == BM25_LINK]
+    _qa_df_rerank = reset_rank(_qa_df_rerank)
+    df_elem_ret = get_leaderboard_table(_qa_df_rerank, datastore.qa_types)
+    return df_elem_ret
+
+def update_qa_hidden_df_rerank(version):
+    datastore = update_datastore(version)
+    _qa_df_rerank_hidden = datastore.qa_raw_df[
+        datastore.qa_raw_df[COL_NAME_RETRIEVAL_MODEL] == BM25_LINK
+        ]
+    _qa_df_rerank_hidden = reset_rank(_qa_df_rerank_hidden)
+    hidden_df_elem = get_leaderboard_table(
+        _qa_df_rerank_hidden, datastore.qa_types, visible=False
+    )
+    return hidden_df_elem
+
+def update_qa_hidden_df_ret(version):
+    datastore = update_datastore(version)
+    _qa_df_ret_hidden = datastore.qa_raw_df[
+        datastore.qa_raw_df[COL_NAME_RERANKING_MODEL] == "NoReranker"
+        ]
+    _qa_df_ret_hidden = reset_rank(_qa_df_ret_hidden)
+    hidden_df_elem = get_leaderboard_table(_qa_df_ret_hidden, datastore.qa_types, visible=False)
+    return hidden_df_elem
+
+def update_qa_hidden_df_ret_rerank(version):
+    datastore = update_datastore(version)
     hidden_df_elem = get_leaderboard_table(datastore.qa_raw_df, datastore.qa_types, visible=False)
-    return domain_elem, lang_elem, model_elem, df_elem, hidden_df_elem
+    return hidden_df_elem
+
+# def update_qa_version(version):
+#     global datastore
+#     global ds_dict
+#     datastore = ds_dict[version]
+#     # domain_elem = get_domain_dropdown(QABenchmarks[datastore.slug])
+#     # lang_elem = get_language_dropdown(QABenchmarks[datastore.slug])
+#     # model_elem = get_reranking_dropdown(datastore.reranking_models)
+#     df_elem = get_leaderboard_table(datastore.qa_fmt_df, datastore.qa_types)
+#     hidden_df_elem = get_leaderboard_table(datastore.qa_raw_df, datastore.qa_types, visible=False)
+#     return model_elem, df_elem, hidden_df_elem
 
 
 def update_doc_version(version):
@@ -151,9 +221,19 @@ with demo:
                         # select domain
                         with gr.Row():
                             domains = get_domain_dropdown(QABenchmarks[datastore.slug])
+                            version.change(
+                                update_qa_domains,
+                                version,
+                                domains
+                            )
                         # select language
                         with gr.Row():
                             langs = get_language_dropdown(QABenchmarks[datastore.slug])
+                            version.change(
+                                update_qa_langs,
+                                version,
+                                langs
+                            )
                     with gr.Column():
                         # select the metric
                         metric = get_metric_dropdown(METRIC_LIST, DEFAULT_METRIC_QA)
@@ -170,17 +250,26 @@ with demo:
                             # select reranking models
                             with gr.Column():
                                 models = get_reranking_dropdown(datastore.reranking_models)
+                                version.change(
+                                    update_qa_models,
+                                    version,
+                                    models
+                                )
                         #  shown_table
                         qa_df_elem_ret_rerank = get_leaderboard_table(datastore.qa_fmt_df, datastore.qa_types)
+                        version.change(
+                            update_qa_df_ret_rerank,
+                            version,
+                            qa_df_elem_ret_rerank
+                        )
                         # Dummy leaderboard for handling the case when the user uses backspace key
                         qa_df_elem_ret_rerank_hidden = get_leaderboard_table(
                             datastore.qa_raw_df, datastore.qa_types, visible=False
                         )
-
                         version.change(
-                            update_qa_version,
+                            update_qa_hidden_df_ret_rerank,
                             version,
-                            [domains, langs, models, qa_df_elem_ret_rerank, qa_df_elem_ret_rerank_hidden],
+                            qa_df_elem_ret_rerank_hidden
                         )
 
                         set_listeners(
@@ -210,10 +299,21 @@ with demo:
                                 search_bar_ret = get_search_bar()
                             with gr.Column(scale=1):
                                 models_ret = get_noreranking_dropdown()
+                                version.change(
+                                    update_qa_models,
+                                    version,
+                                    models_ret
+                                )
 
-                        _qa_df_ret = datastore.qa_fmt_df[datastore.qa_fmt_df[COL_NAME_RERANKING_MODEL] == "NoReranker"]
+                        _qa_df_ret = datastore.qa_fmt_df[
+                            datastore.qa_fmt_df[COL_NAME_RERANKING_MODEL] == "NoReranker"]
                         _qa_df_ret = reset_rank(_qa_df_ret)
                         qa_df_elem_ret = get_leaderboard_table(_qa_df_ret, datastore.qa_types)
+                        version.change(
+                            update_qa_df_ret,
+                            version,
+                            qa_df_elem_ret
+                        )
 
                         # Dummy leaderboard for handling the case when the user uses backspace key
                         _qa_df_ret_hidden = datastore.qa_raw_df[
@@ -225,15 +325,9 @@ with demo:
                         )
 
                         version.change(
-                            update_qa_version,
+                            update_qa_hidden_df_ret,
                             version,
-                            [
-                                domains,
-                                langs,
-                                models_ret,
-                                qa_df_elem_ret,
-                                qa_df_elem_ret_hidden,
-                            ],
+                            qa_df_elem_ret_hidden
                         )
 
                         set_listeners(
@@ -271,9 +365,19 @@ with demo:
                         with gr.Row():
                             with gr.Column(scale=1):
                                 qa_models_rerank = get_reranking_dropdown(qa_rerank_models)
+                                version.change(
+                                    update_qa_models,
+                                    version,
+                                    qa_models_rerank
+                                )
                             with gr.Column(scale=1):
                                 qa_search_bar_rerank = gr.Textbox(show_label=False, visible=False)
                         qa_df_elem_rerank = get_leaderboard_table(_qa_df_rerank, datastore.qa_types)
+                        version.change(
+                            update_qa_df_rerank,
+                            version,
+                            qa_df_elem_rerank
+                        )
 
                         _qa_df_rerank_hidden = datastore.qa_raw_df[
                             datastore.qa_raw_df[COL_NAME_RETRIEVAL_MODEL] == BM25_LINK
@@ -282,11 +386,10 @@ with demo:
                         qa_df_elem_rerank_hidden = get_leaderboard_table(
                             _qa_df_rerank_hidden, datastore.qa_types, visible=False
                         )
-
                         version.change(
-                            update_qa_version,
+                            update_qa_hidden_df_rerank,
                             version,
-                            [domains, langs, qa_models_rerank, qa_df_elem_rerank, qa_df_elem_rerank_hidden],
+                            qa_df_elem_rerank_hidden
                         )
 
                         set_listeners(
@@ -406,7 +509,13 @@ with demo:
                         version.change(
                             update_doc_version,
                             version,
-                            [domains, langs, models_ret, doc_df_elem_ret, doc_df_elem_ret_hidden],
+                            [
+                                domains,
+                                langs,
+                                models_ret,
+                                doc_df_elem_ret,
+                                doc_df_elem_ret_hidden
+                            ],
                         )
 
                         set_listeners(
