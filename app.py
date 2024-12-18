@@ -574,7 +574,7 @@ with demo:
                             BENCHMARK_VERSION_LIST,
                             value=LATEST_BENCHMARK_VERSION,
                             interactive=True,
-                            label="AIR-Bench Version",
+                            label="AIR-Bench Version (🟠NOTE: Select the version you want to submit to)",
                         )
                 with gr.Row():
                     upload_button = gr.UploadButton("Click to upload search results", file_count="single")
