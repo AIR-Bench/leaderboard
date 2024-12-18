@@ -4,7 +4,10 @@ import gradio as gr
 from apscheduler.schedulers.background import BackgroundScheduler
 from huggingface_hub import snapshot_download
 
-from src.about import BENCHMARKS_TEXT, EVALUATION_QUEUE_TEXT, INTRODUCTION_TEXT, TITLE
+from src.about import (
+    BENCHMARKS_TEXT, EVALUATION_QUEUE_TEXT, INTRODUCTION_TEXT, TITLE,
+    CITATION_BUTTON_LABEL, CITATION_BUTTON_TEXT
+)
 from src.benchmarks import LongDocBenchmarks, QABenchmarks
 from src.columns import COL_NAME_RERANKING_MODEL, COL_NAME_RETRIEVAL_MODEL
 from src.components import (
@@ -614,6 +617,9 @@ with demo:
 
         with gr.TabItem("📝 About", elem_id="llm-benchmark-tab-table", id=3):
             gr.Markdown(BENCHMARKS_TEXT, elem_classes="markdown-text")
+
+    gr.Markdown(f"{CITATION_BUTTON_LABEL}\n\n{CITATION_BUTTON_TEXT}", elem_classes="markdown-text")
+
 
 if __name__ == "__main__":
     scheduler = BackgroundScheduler()
