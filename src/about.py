@@ -32,6 +32,7 @@ EVALUATION_QUEUE_TEXT = """
 
 CITATION_BUTTON_LABEL = "Copy the following snippet to cite these results"
 CITATION_BUTTON_TEXT = r"""
+```bibtex
 @misc{chen2024airbench,
       title={AIR-Bench: Automated Heterogeneous Information Retrieval Benchmark}, 
       author={Jianlyu Chen and Nan Wang and Chaofan Li and Bo Wang and Shitao Xiao and Han Xiao and Hao Liao and Defu Lian and Zheng Liu},
@@ -41,4 +42,5 @@ CITATION_BUTTON_TEXT = r"""
       primaryClass={cs.IR},
       url={https://arxiv.org/abs/2412.13102}, 
 }
+```
 """
