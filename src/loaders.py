@@ -34,7 +34,10 @@ def load_raw_eval_results(results_path: Union[Path, str]) -> List[FullEvalResult
         try:
             eval_result = FullEvalResult.init_from_json_file(model_result_filepath)
         except UnicodeDecodeError:
-            print(f"loading file failed. {model_result_filepath}")
+            print(f"loading file failed since UnicodeDecodeError. {model_result_filepath}")
+            continue
+        except IndexError:
+            print(f"loading file failed since IndexError. {model_result_filepath}")
             continue
         print(f"file loaded: {model_result_filepath}")
         timestamp = eval_result.timestamp
