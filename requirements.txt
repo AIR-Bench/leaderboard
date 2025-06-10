@@ -13,3 +13,4 @@ tqdm>=4.65.0
 accelerate>=0.24.1
 socksio>=1.0.0
 air-benchmark>=0.1.0
+pydantic==2.10.6
