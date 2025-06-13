@@ -5,7 +5,7 @@ from typing import Dict, List, Union
 import pandas as pd
 
 from src.columns import COL_NAME_IS_ANONYMOUS, COL_NAME_REVISION, COL_NAME_TIMESTAMP
-from src.envs import BENCHMARK_VERSION_LIST, DEFAULT_METRIC_LONG_DOC, DEFAULT_METRIC_QA
+from src.envs import BENCHMARK_VERSION_LIST, DEFAULT_METRIC_LONG_DOC, DEFAULT_METRIC_QA, SKIP_SUBMISSIONS
 from src.models import FullEvalResult, LeaderboardDataStore, TaskType, get_safe_name
 from src.utils import get_default_cols, get_leaderboard_df, reset_rank
 
@@ -26,7 +26,12 @@ def load_raw_eval_results(results_path: Union[Path, str]) -> List[FullEvalResult
             if not (file.startswith("results") and file.endswith(".json")):
                 print(f"skip {file}")
                 continue
-            model_result_filepaths.append(os.path.join(root, file))
+            filepath = os.path.join(root, file)
+            # skip the submissions that are in the skip list
+            if any(skip in filepath for skip in SKIP_SUBMISSIONS):
+                print(f"skip {filepath}")
+                continue
+            model_result_filepaths.append(filepath)
 
     eval_results = {}
     for model_result_filepath in model_result_filepaths:

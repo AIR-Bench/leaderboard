@@ -65,3 +65,10 @@ METRIC_LIST = [
     "mrr_at_100",
     "mrr_at_1000",
 ]
+
+# submissions need to be skipped for some reason
+SKIP_SUBMISSIONS = [
+    # 2025/06/13 - the two submissions are submitted by developers to test the submission system
+    "AIR-Bench_24.05/bge-m3/NoReranker/results.json",
+    "AIR-Bench_24.05/bge-m3/NoReranker/results_20241201071239-70de025455132e3b6d6a7786130cf91f.json"
+]
