@@ -1,3 +1,31 @@
+import sys
+import types
+
+# Python 3.13 removed audioop from stdlib; pydub (a gradio dep) needs it.
+# Provide minimal stubs so the import doesn't crash the leaderboard.
+try:
+    import audioop  # noqa: F811
+except ModuleNotFoundError:
+    _audioop = types.ModuleType("audioop")
+    _func_names = [
+        "add", "adpcm2lin", "alaw2lin", "avg", "avgpp", "bias",
+        "byteswap", "cross", "findfactor", "findfit", "findmax",
+        "getsample", "lin2adpcm", "lin2alaw", "lin2lin", "lin2ulaw",
+        "max", "maxpp", "minmax", "mul", "ratecv", "reverse", "rms",
+        "tomono", "tostereo", "ulaw2lin",
+    ]
+
+    def _make_stub(name):
+        def stub(*args, **kwargs):
+            raise NotImplementedError(f"audioop.{name} is not available on Python 3.13")
+
+        return stub
+
+    for _name in _func_names:
+        setattr(_audioop, _name, _make_stub(_name))
+    _audioop.error = Exception
+    sys.modules["audioop"] = _audioop
+
 import os
 
 import gradio as gr
