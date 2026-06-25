@@ -26,6 +26,30 @@ except ModuleNotFoundError:
     _audioop.error = Exception
     sys.modules["audioop"] = _audioop
 
+# huggingface_hub >= 1.0 removed HfFolder (gradio 4.29.0 oauth.py imports it)
+import huggingface_hub
+
+if not hasattr(huggingface_hub, "HfFolder"):
+
+    class _HfFolder:
+        path = "/root/.huggingface/token"
+
+        @staticmethod
+        def get_token():
+            import os as _os
+
+            return _os.environ.get("HF_TOKEN")
+
+        @staticmethod
+        def save_token(token):
+            pass
+
+        @staticmethod
+        def delete_token():
+            pass
+
+    huggingface_hub.HfFolder = _HfFolder
+
 import os
 
 import gradio as gr
