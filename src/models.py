@@ -1,6 +1,6 @@
 import json
 from collections import defaultdict
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
 from typing import List
 
@@ -142,10 +142,10 @@ class LeaderboardDataStore:
     version: str
     slug: str
     raw_data: list = None
-    qa_raw_df: pd.DataFrame = pd.DataFrame()
-    doc_raw_df: pd.DataFrame = pd.DataFrame()
-    qa_fmt_df: pd.DataFrame = pd.DataFrame()
-    doc_fmt_df: pd.DataFrame = pd.DataFrame()
+    qa_raw_df: pd.DataFrame = field(default_factory=pd.DataFrame)
+    doc_raw_df: pd.DataFrame = field(default_factory=pd.DataFrame)
+    qa_fmt_df: pd.DataFrame = field(default_factory=pd.DataFrame)
+    doc_fmt_df: pd.DataFrame = field(default_factory=pd.DataFrame)
     reranking_models: list = None
     qa_types: list = None
     doc_types: list = None
